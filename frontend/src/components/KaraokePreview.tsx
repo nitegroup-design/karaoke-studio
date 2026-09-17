@@ -305,6 +305,27 @@ export function KaraokePreview({
     return null;
   }, [lyrics.lines, currentTime, currentLineIndex]);
 
+  // Calculate anchor for kinetic scrolling
+  const anchor = currentLineIndex >= 0
+    ? currentLineIndex
+    : upcomingInfo
+      ? upcomingInfo.index
+      : 0;
+
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
+
+  useLayoutEffect(() => {
+    if (preset !== 'modern' || !trackRef.current) return;
+    const track = trackRef.current;
+    if (anchor >= 0 && anchor < track.children.length) {
+      const child = track.children[anchor] as HTMLElement;
+      if (child) {
+        setScrollOffset(child.offsetTop + child.offsetHeight / 2);
+      }
+    }
+  }, [anchor, preset, lyrics.lines]);
+
   // =========================================================================
   // Classic Alternating 2-line KTV Preset (Phòng thu TV truyền thống)
   // =========================================================================
@@ -402,24 +423,9 @@ export function KaraokePreview({
   // =========================================================================
   // Apple Music Sing Kinetic Spring Flow (Chuẩn Apple Music siêu mượt)
   // =========================================================================
-  const anchor = currentLineIndex >= 0
-    ? currentLineIndex
-    : upcomingInfo
-      ? upcomingInfo.index
-      : 0;
 
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [scrollOffset, setScrollOffset] = useState(0);
 
-  useLayoutEffect(() => {
-    if (preset !== 'modern' || !trackRef.current) return;
-    const track = trackRef.current;
-    if (anchor >= 0 && anchor < track.children.length) {
-      const child = track.children[anchor] as HTMLElement;
-      // Calculate true center offset based on actual rendered layout
-      setScrollOffset(child.offsetTop + child.offsetHeight / 2);
-    }
-  }, [anchor, preset, lyrics.lines]);
+
 
   return (
     <div className="karaoke-stage apple-stage" aria-label="Xem trước Apple Music Sing">
