@@ -520,9 +520,10 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   cursor: pointer;
   padding: 0 16px;
   user-select: none;
-  transition: transform 0.55s cubic-bezier(0.2, 0.9, 0.3, 1),
-              opacity 0.55s cubic-bezier(0.2, 0.9, 0.3, 1);
-  will-change: transform, opacity;
+  transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1),
+              opacity 0.6s cubic-bezier(0.2, 0.9, 0.3, 1),
+              filter 0.6s ease;
+  will-change: transform, opacity, filter;
 }
 
 .apple-line-slot:hover {
@@ -532,44 +533,40 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 /* Apple Music Depth of Field (DoF) Hierarchy */
 .apple-line-active {
   opacity: 1;
-  transform: scale(1.08);
+  transform: scale(1.05);
+  filter: blur(0px);
+}
+
+.apple-line-adjacent {
+  opacity: 0.45;
+  transform: scale(0.98);
+  filter: blur(1.5px);
+}
+
+.apple-line-mid {
+  opacity: 0.25;
+  transform: scale(0.92);
+  filter: blur(3px);
+}
+
+.apple-line-far {
+  opacity: 0.1;
+  transform: scale(0.85);
+  filter: blur(5px);
 }
 
 .apple-line-active .luxury-line {
   font-size: clamp(1.4rem, 3.2vw, 2.75rem);
   font-weight: 850;
   line-height: 1.38;
-  filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.42)) drop-shadow(0 4px 14px rgba(0,0,0,0.85));
 }
 
-.apple-line-adjacent {
-  opacity: 0.38;
-  transform: scale(0.96);
-}
-
-.apple-line-adjacent .luxury-line {
-  font-size: clamp(1.15rem, 2.5vw, 2.2rem);
+.apple-line-adjacent .luxury-line,
+.apple-line-mid .luxury-line,
+.apple-line-far .luxury-line {
+  font-size: clamp(1.3rem, 2.8vw, 2.4rem);
   font-weight: 700;
   line-height: 1.4;
-}
-
-.apple-line-mid {
-  opacity: 0.16;
-  transform: scale(0.91);
-}
-
-.apple-line-mid .luxury-line {
-  font-size: clamp(1rem, 2.2vw, 1.85rem);
-  font-weight: 600;
-}
-
-.apple-line-far {
-  opacity: 0.04;
-  transform: scale(0.86);
-}
-
-.apple-line-far .luxury-line {
-  font-size: clamp(0.9rem, 2vw, 1.6rem);
 }
 
 .apple-countdown-float {

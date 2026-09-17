@@ -230,42 +230,75 @@ function HighlightedLine({
   const outlineColor = style?.outline_color || '#181109';
   const effect = style?.effect || 'smooth';
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    if (!containerRef.current || !textRef.current) return;
+    const updateScale = () => {
+      const cWidth = containerRef.current?.clientWidth || 0;
+      const tWidth = textRef.current?.scrollWidth || 0;
+      // Allow a tiny margin, scale down if text is larger than 95% of container
+      if (cWidth > 0 && tWidth > cWidth * 0.95) {
+        setScale((cWidth * 0.95) / tWidth);
+      } else {
+        setScale(1);
+      }
+    };
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(containerRef.current);
+    updateScale();
+    return () => observer.disconnect();
+  }, [line.text]);
+
   return (
-    <p
+    <div
+      ref={containerRef}
       className={`luxury-line ${active ? 'luxury-line-active' : 'luxury-line-inactive'}`}
       style={{
         fontFamily,
         margin: 0,
-        lineHeight: 1.45,
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
         opacity: active ? 1 : 0.45,
-        transform: active ? 'scale(1)' : 'scale(0.95)',
-        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: 'opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
-      {line.words.length > 0 ? (
-        line.words.map((word, index) => {
-          const fill = active
-            ? index < wordIndex
-              ? 100
-              : index === wordIndex
-                ? progress * 100
-                : 0
-            : 0;
-          const isCurrentWord = active && index === wordIndex;
+      <div
+        ref={textRef}
+        style={{
+          whiteSpace: 'nowrap',
+          transform: `scale(${scale * (active ? 1 : 0.95)})`,
+          transformOrigin: 'center',
+          transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        {line.words.length > 0 ? (
+          line.words.map((word, index) => {
+            const fill = active
+              ? index < wordIndex
+                ? 100
+                : index === wordIndex
+                  ? progress * 100
+                  : 0
+              : 0;
+            const isCurrentWord = active && index === wordIndex;
 
-          return (
-            <LuxuryWord
-              key={word.id}
-              word={word.word}
-              fill={fill}
-              isCurrent={isCurrentWord}
-              fontFamily={fontFamily}
-              primaryColor={primaryColor}
-              secondaryColor={secondaryColor}
-              outlineColor={outlineColor}
-              effect={effect}
-            />
-          );
+            return (
+              <LuxuryWord
+                key={word.id}
+                word={word.word}
+                fill={fill}
+                isCurrent={isCurrentWord}
+                fontFamily={fontFamily}
+                primaryColor={primaryColor}
+                secondaryColor={secondaryColor}
+                outlineColor={outlineColor}
+                effect={effect}
+              />
+            );
         })
       ) : (
         <span style={{ 
@@ -276,7 +309,8 @@ function HighlightedLine({
           {line.text}
         </span>
       )}
-    </p>
+      </div>
+    </div>
   );
 }
 
@@ -472,6 +506,19 @@ export function KaraokePreview({
             if (dist === 1) depthClass = 'apple-line-adjacent';
             else if (dist === 2) depthClass = 'apple-line-mid';
             else if (dist >= 3) depthClass = 'apple-line-far';
+
+            // Performance Culling: Skip rendering deep DOM for items far out of view
+            // Using visibility: hidden + skipping HighlightedLine children keeps the node structure
+            // for offsetTop tracking but eliminates 90% of layout & GPU blur costs
+            if (dist > 5) {
+              return (
+                <div
+                  key={line.id}
+                  className={`apple-line-slot apple-line-far`}
+                  style={{ minHeight: '80px', padding: '16px 0', visibility: 'hidden' }}
+                />
+              );
+            }
 
             return (
               <div
