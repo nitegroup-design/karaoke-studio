@@ -459,7 +459,8 @@ export function KaraokePreview({
           ref={trackRef}
           className="apple-lyrics-track"
           style={{
-            transform: `translate3d(0, calc(50% - ${scrollOffset}px), 0)`,
+            top: '50%',
+            transform: `translate3d(0, -${scrollOffset}px, 0)`,
             transition: 'transform 0.68s cubic-bezier(0.2, 0.9, 0.3, 1)',
           }}
         >
