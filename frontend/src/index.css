@@ -31,24 +31,24 @@
 }
 
 .dark {
-  color: #f7f3eb;
-  background: #111216;
-  --bg: #111216;
-  --panel: #1c1e24;
-  --panel-soft: #22252c;
-  --panel-strong: #2a2d35;
-  --text: #f7f3eb;
-  --muted: #aaa398;
-  --faint: #77736d;
-  --border: #343741;
-  --border-strong: #4a4e59;
-  --accent: #ffb547;
-  --accent-bright: #ff7a18;
-  --accent-soft: rgba(255, 181, 71, 0.12);
-  --gold: #ffb547;
+  color: #f7f7f4;
+  background: #050608;
+  --bg: #050608;
+  --panel: rgba(16, 17, 21, 0.68);
+  --panel-soft: rgba(255, 255, 255, 0.045);
+  --panel-strong: rgba(20, 21, 26, 0.72);
+  --text: #f7f7f4;
+  --muted: #9da1aa;
+  --faint: #666b74;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --accent: #ffd700;
+  --accent-bright: #ffe66d;
+  --accent-soft: rgba(255, 215, 0, 0.09);
+  --gold: #ffd700;
   --danger: #ff746d;
-  --success: #65d59b;
-  --shadow: 0 20px 70px rgba(0, 0, 0, 0.28);
+  --success: #55e6a5;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
 }
 
 * { box-sizing: border-box; }
@@ -77,17 +77,37 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .icon-button.active { border-color: var(--accent); background: var(--accent-soft); }
 .secondary-button { min-height: 38px; padding: 0 .88rem; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); font-size: .78rem; font-weight: 700; white-space: nowrap; }
 .secondary-button:hover { border-color: var(--accent); color: var(--accent); }
-.primary-button { min-height: 42px; padding: 0 1.1rem; border-radius: 11px; color: #fff; background: linear-gradient(125deg, #f59e0b, #ea580c, #c2410c); box-shadow: 0 9px 24px rgba(194, 65, 12, .18); font-size: .8rem; font-weight: 800; }
-.dark .primary-button { color: #21170d; background: linear-gradient(125deg, #ffca72, #ff9a32, #ff7a18); }
-.primary-button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(194, 65, 12, .26); }
+.primary-button { min-height: 42px; padding: 0 1.1rem; border-radius: 11px; color: #fff; background: linear-gradient(125deg, #f59e0b, #ea580c, #c2410c); box-shadow: 0 9px 24px rgba(194, 65, 12, .18); font-size: .8rem; font-weight: 800; border: 1px solid transparent; }
+.dark .primary-button { color: #0d0d0a; background: var(--gold); border-color: var(--gold); box-shadow: 0 12px 30px rgba(255, 215, 0, 0.12); }
+.primary-button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 30%, transparent); }
 .primary-button.full-width { width: 100%; }
 .text-button { padding: .4rem .55rem; background: transparent; color: var(--accent); font-size: .75rem; font-weight: 700; }
 
-/* Home */
-.home-page { position: relative; min-height: 100vh; overflow: hidden; background: radial-gradient(circle at 20% 0, color-mix(in srgb, var(--gold) 9%, transparent), transparent 29rem), var(--bg); }
-.ambient { position: absolute; width: 30rem; height: 30rem; border-radius: 50%; filter: blur(95px); pointer-events: none; opacity: .14; }
-.ambient-one { right: -12rem; top: 1rem; background: #ff9d00; }
-.ambient-two { left: -15rem; top: 35rem; background: #ed4c18; }
+/* Home & LyricSync Theme Background */
+.home-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 75% 8%, color-mix(in srgb, var(--gold) 10%, transparent), transparent 23%),
+    radial-gradient(circle at 15% 65%, color-mix(in srgb, var(--accent-bright) 7%, transparent), transparent 25%),
+    linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 95%, #111) 48%, var(--bg) 100%);
+}
+.home-page::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: conic-gradient(from 20deg at 50% 50%, transparent 0 22%, color-mix(in srgb, var(--gold) 4.5%, transparent) 28%, transparent 36% 100%);
+  filter: blur(70px);
+  pointer-events: none;
+  animation: spin 22s linear infinite;
+  z-index: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes load { from { width: 0; } to { width: 100%; } }
+@keyframes glow { 50% { box-shadow: 0 0 40px color-mix(in srgb, var(--gold) 22%, transparent); } }
+
+.ambient { display: none; }
 .home-header { position: relative; z-index: 2; max-width: 1240px; margin: auto; padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; }
 .brand { display: flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; }
 .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(145deg, var(--gold), var(--accent)); color: #fff; font-weight: 900; box-shadow: 0 10px 25px rgba(194, 65, 12, .22); }
@@ -101,16 +121,17 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .hero-points { margin-top: 2.4rem; display: grid; gap: 1rem; }
 .hero-points span { display: flex; align-items: center; gap: .75rem; color: var(--muted); font-size: .78rem; font-weight: 600; }
 .hero-points i { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--accent); font-size: .62rem; font-style: normal; }
-.create-card { padding: clamp(1.3rem, 2.5vw, 2rem); background: color-mix(in srgb, var(--panel) 96%, transparent); border: 1px solid var(--border); border-radius: 26px; box-shadow: var(--shadow); }
+.create-card { padding: clamp(1.3rem, 2.5vw, 2rem); background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 72%, transparent), color-mix(in srgb, var(--panel-soft) 62%, transparent)); border: 1px solid var(--border); border-radius: 26px; box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 20px 60px rgba(0,0,0,.28); backdrop-filter: blur(20px); }
 .create-card-heading, .section-heading, .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .create-card h2, .section-heading h2, .panel-heading h2 { margin: .18rem 0 0; font-size: 1.18rem; letter-spacing: -.03em; }
-.audio-dropzone { position: relative; margin: 1.25rem 0; padding: 6px; border: 1px dashed var(--border-strong); border-radius: 18px; background: var(--panel-soft); transition: .2s ease; }
-.audio-dropzone.dragging { border-color: var(--accent); background: var(--accent-soft); transform: scale(1.01); }
-.audio-dropzone.has-file { border-style: solid; border-color: color-mix(in srgb, var(--success) 55%, var(--border)); }
-.dropzone-button { width: 100%; min-height: 118px; display: flex; align-items: center; justify-content: center; gap: 1rem; border: 0; border-radius: 14px; background: transparent; cursor: pointer; color: var(--text); text-align: left; }
-.upload-orbit { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 18px; background: linear-gradient(145deg, var(--gold), var(--accent)); color: #fff; font-size: 1.5rem; box-shadow: 0 9px 26px rgba(194, 65, 12, .2); }
-.dropzone-button > span:last-child, .file-summary { display: flex; flex-direction: column; gap: .35rem; }
-.dropzone-button strong { font-size: .9rem; }
+.audio-dropzone { position: relative; margin: 1.25rem 0; padding: 26px; min-height: 180px; display: grid; place-items: center; text-align: center; border: 1.5px dashed color-mix(in srgb, var(--gold) 40%, transparent); border-radius: 24px; background: transparent; transition: .3s ease; animation: dropzone-glow 4s ease-in-out infinite; }
+@keyframes dropzone-glow { 50% { box-shadow: 0 0 40px color-mix(in srgb, var(--gold) 15%, transparent); } }
+.audio-dropzone.dragging { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 12%, transparent); transform: scale(1.02); }
+.audio-dropzone.has-file { border-style: solid; border-color: color-mix(in srgb, var(--success) 55%, var(--border)); animation: none; }
+.dropzone-button { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; border: 0; background: transparent; cursor: pointer; color: var(--text); text-align: center; }
+.upload-orbit { width: 50px; height: 50px; display: grid; place-items: center; border-radius: 18px; background: transparent; color: var(--gold); font-size: 2.2rem; margin-bottom: 4px; box-shadow: none; }
+.dropzone-button > span:last-child, .file-summary { display: flex; flex-direction: column; gap: .35rem; align-items: center; }
+.dropzone-button strong { font-size: .95rem; }
 .dropzone-button small { color: var(--muted); font-size: .7rem; }
 .lyrics-input-heading { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: .65rem; }
 .lyrics-input-heading label { display: flex; flex-direction: column; gap: .25rem; font-size: .8rem; }

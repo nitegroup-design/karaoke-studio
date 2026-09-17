@@ -162,20 +162,20 @@ export function UploadPage() {
 
       <section className="hero-section">
         <div className="hero-copy">
-          <span className="eyebrow">TÁCH NHẠC · CĂN LỜI · XUẤT VIDEO</span>
-          <h1>Biến một bài hát thành<br /><em>karaoke đúng nhịp.</em></h1>
-          <p>Dùng lyric của bạn làm bản lời chuẩn, nghe và sửa trực tiếp trên waveform, rồi xuất video cùng ASS, SRT và WAV để dựng tiếp trong CapCut.</p>
+          <span className="eyebrow" style={{ color: 'var(--gold)', letterSpacing: '0.14em' }}>● AI AUDIO → LYRICS</span>
+          <h1>Đồng bộ lời bài hát<br /><em style={{ color: 'var(--gold)', fontStyle: 'normal', textShadow: '0 0 35px rgba(255,215,0,.19)' }}>đến từng âm tiết.</em></h1>
+          <p>Pipeline tự động cho remix, cover, acoustic và live — tách vocal, ASR tiếng Việt, fuzzy alignment, nhận diện lặp lại và micro-alignment độ chính xác cao.</p>
           <div className="hero-points">
-            <span><i>01</i> Giữ nguyên dấu Việt và điệp khúc</span>
-            <span><i>02</i> Khóa câu đã sửa thủ công</span>
-            <span><i>03</i> Classic và Modern cùng timing</span>
+            <span><i style={{ color: 'var(--gold)' }}>01</i> So khớp cấu trúc tự động (Fuzzy)</span>
+            <span><i style={{ color: 'var(--gold)' }}>02</i> Mốc thời gian chính xác mili-giây</span>
+            <span><i style={{ color: 'var(--gold)' }}>03</i> Render Kinetic Typography siêu mượt</span>
           </div>
         </div>
 
         <div className="create-card">
           <div className="create-card-heading">
-            <div><span className="eyebrow">BÀI HÁT MỚI</span><h2>Chuẩn bị nguyên liệu</h2></div>
-            <span className="step-badge">1 / 3</span>
+            <div><span className="eyebrow" style={{ color: 'var(--gold)' }}>WORKSPACE</span><h2>Khởi tạo tiến trình</h2></div>
+            <span className="step-badge" style={{ borderColor: 'var(--gold)', color: 'var(--gold)' }}>GPU Ready</span>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
@@ -235,11 +235,11 @@ export function UploadPage() {
                 onChange={(event) => { const file = event.target.files?.[0]; if (file) setAudioFile(file); }}
               />
               <button type="button" className="dropzone-button" onClick={() => audioInputRef.current?.click()}>
-                <span className="upload-orbit">♫</span>
+                <span className="upload-orbit">⌁</span>
                 {audioFile ? (
                   <span className="file-summary"><strong>{audioFile.name}</strong><small>{readableSize(audioFile.size)} · Bấm để đổi file</small></span>
                 ) : (
-                  <span><strong>Kéo nhạc vào đây</strong><small>hoặc bấm để chọn MP3, WAV, M4A, FLAC</small></span>
+                  <span><strong>Kéo & thả file âm thanh vào đây</strong><small>MP3 • WAV • M4A • FLAC — hỗ trợ bản phối dài và live</small></span>
                 )}
               </button>
             </div>
