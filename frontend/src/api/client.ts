@@ -171,7 +171,7 @@ const request = async <T = unknown>(path: string, init?: RequestInit): Promise<T
   } catch (error) {
     if (error instanceof ApiError) throw error;
     if (error instanceof TypeError && (error.message.includes('fetch') || error.message.includes('network'))) {
-      throw new ApiError('Không thể kết nối đến máy chủ Backend (Port 8000). Vui lòng đảm bảo Backend đang chạy.', 0, error);
+      throw new ApiError('Không thể kết nối đến máy chủ Backend (Colab / Ngrok / Port 8000). Vui lòng kiểm tra lại xem Google Colab còn đang chạy không, hoặc ngrok đã hết hạn.', 0, error);
     }
     throw error;
   }

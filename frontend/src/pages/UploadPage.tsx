@@ -285,7 +285,12 @@ export function UploadPage() {
               )}
             </button>
           </div>
-          {startError ? <p className="form-error" role="alert">{startError}</p> : null}
+          {startError ? (
+            <div className="start-error-box" role="alert">
+              <strong>Lỗi kết nối</strong>
+              <p>{startError}</p>
+            </div>
+          ) : null}
           <p className="privacy-note">Tệp chỉ được xử lý trên máy của bạn. Lyric được dùng để căn chữ, không thay đổi nội dung.</p>
         </div>
       </section>

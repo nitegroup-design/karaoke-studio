@@ -149,6 +149,9 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .start-button span:last-child { margin-left: .6rem; }
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: middle; }
 .form-error, .library-error { color: var(--danger); font-size: .72rem; }
+.start-error-box { margin-top: 1rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); text-align: left; }
+.start-error-box strong { display: block; margin-bottom: 0.3rem; font-size: 0.8rem; font-weight: 800; }
+.start-error-box p { margin: 0; font-size: 0.72rem; line-height: 1.5; }
 .privacy-note { margin: .9rem 0 0; color: var(--faint); font-size: .62rem; text-align: center; }
 .library-section { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding: 0 28px 5rem; }
 .section-heading { margin-bottom: 1.15rem; }
