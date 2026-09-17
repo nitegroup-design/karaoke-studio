@@ -473,6 +473,60 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 }
 
 /* Living Ambient Aurora Fluid Orbs */
+/* Multi-colored light spots flowing */
+.stage-light-spot {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(45px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.spot-1 {
+  width: 60%; height: 60%;
+  background: radial-gradient(circle, rgba(255, 181, 71, 0.45) 0%, transparent 70%);
+  animation: floatSpot1 14s ease-in-out infinite, pulseSpot 2s ease-in-out infinite alternate;
+}
+.spot-2 {
+  width: 50%; height: 50%;
+  background: radial-gradient(circle, rgba(255, 42, 133, 0.4) 0%, transparent 70%);
+  animation: floatSpot2 16s ease-in-out infinite, pulseSpot 1.8s ease-in-out infinite alternate 0.5s;
+}
+.spot-3 {
+  width: 70%; height: 70%;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.35) 0%, transparent 70%);
+  animation: floatSpot3 19s ease-in-out infinite, pulseSpot 2.2s ease-in-out infinite alternate 1s;
+}
+.spot-4 {
+  width: 55%; height: 55%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%);
+  animation: floatSpot4 15s ease-in-out infinite, pulseSpot 1.9s ease-in-out infinite alternate 1.5s;
+}
+
+/* Movement animations */
+@keyframes floatSpot1 { 0%, 100% { top: -10%; left: -10%; } 50% { top: 40%; left: 20%; } }
+@keyframes floatSpot2 { 0%, 100% { bottom: -10%; right: -10%; } 50% { bottom: 30%; right: 40%; } }
+@keyframes floatSpot3 { 0%, 100% { top: 60%; left: -20%; } 50% { top: -10%; left: 50%; } }
+@keyframes floatSpot4 { 0%, 100% { top: -20%; right: 20%; } 50% { top: 50%; right: -10%; } }
+
+/* Pulsing to the music (light/dark) */
+@keyframes pulseSpot {
+  0% { opacity: 0.3; transform: scale(0.95); }
+  100% { opacity: 0.95; transform: scale(1.05); }
+}
+
+/* The glass layer that blurs everything underneath */
+.stage-glass-overlay {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(80px) saturate(1.2);
+  -webkit-backdrop-filter: blur(80px) saturate(1.2);
+  background: rgba(10, 10, 10, 0.35); /* Dark tint */
+  z-index: 1; /* Above spots */
+  pointer-events: none;
+}
+
+/* Subtly glowing logo on the glass */
 .stage-logo-bg {
   position: absolute;
   top: 50%;
@@ -484,47 +538,14 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.04;
-  filter: blur(2px);
+  opacity: 0.06;
+  filter: blur(1px);
   animation: audioPulseBg 2.5s ease-in-out infinite alternate;
 }
 
-.apple-aurora-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  pointer-events: none;
-  opacity: 0.4;
-  mix-blend-mode: screen;
-  animation: audioPulseOrb 5s ease-in-out infinite alternate;
-}
-
-.apple-aurora-orb.orb-1 {
-  width: 120%;
-  height: 120%;
-  top: -30%;
-  left: -10%;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.4) 0%, rgba(217, 119, 6, 0.1) 50%, transparent 70%);
-}
-
-.apple-aurora-orb.orb-2 {
-  width: 110%;
-  height: 110%;
-  bottom: -20%;
-  right: -10%;
-  background: radial-gradient(circle, rgba(252, 211, 77, 0.3) 0%, rgba(180, 83, 9, 0.15) 50%, transparent 80%);
-  animation-delay: -2.5s;
-}
-
 @keyframes audioPulseBg {
-  0% { transform: translate(-50%, -50%) scale(0.98); opacity: 0.03; }
-  100% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.07; }
-}
-
-@keyframes audioPulseOrb {
-  0% { transform: scale(1); opacity: 0.3; }
-  50% { transform: scale(1.05); opacity: 0.5; }
-  100% { transform: scale(0.95); opacity: 0.35; }
+  0% { transform: translate(-50%, -50%) scale(0.98); opacity: 0.04; }
+  100% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.08; }
 }
 
 /* Apple Music Viewport with Fade-to-Edge Masks */

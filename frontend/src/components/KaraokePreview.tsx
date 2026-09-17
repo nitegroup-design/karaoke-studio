@@ -59,14 +59,21 @@ function LuxuryStageBackground({
         />
       ) : (
         <>
-          {/* Subtle pulsating app logo watermark */}
-          <div className="stage-logo-bg" />
-          
-          {/* Pulsating Ambient Gold Orbs */}
-          <div className="apple-aurora-orb orb-1" />
-          <div className="apple-aurora-orb orb-2" />
+          {/* Deep black base */}
+          <div className="stage-base" style={{ position: 'absolute', inset: 0, background: '#020202' }} />
 
-          {/* Twinkling Starfield */}
+          {/* Animated colorful light spots (bokeh/orbs) */}
+          <div className="stage-light-spot spot-1" />
+          <div className="stage-light-spot spot-2" />
+          <div className="stage-light-spot spot-3" />
+          <div className="stage-light-spot spot-4" />
+
+          {/* Frosted Glass overlay with subtle pulsing logo */}
+          <div className="stage-glass-overlay">
+            <div className="stage-logo-bg" />
+          </div>
+
+          {/* Twinkling Starfield over the glass */}
           <div className="stage-stars-container">
             {STARS.map((star, idx) => (
               <div
