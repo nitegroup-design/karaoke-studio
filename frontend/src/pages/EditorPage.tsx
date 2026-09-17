@@ -107,8 +107,8 @@ export function EditorPage() {
       try {
         const status = await api.getProcessStatus(songId);
         if (cancelled) return;
-        const separation = status.separation.state.toLowerCase();
-        const transcription = status.transcription.state.toLowerCase();
+        const separation = (status?.separation?.state || (typeof status?.separation === 'string' ? status.separation : 'pending')).toLowerCase();
+        const transcription = (status?.transcription?.state || (typeof status?.transcription === 'string' ? status.transcription : 'pending')).toLowerCase();
         if (ERROR_STATES.has(separation) || ERROR_STATES.has(transcription)) {
           setProcessStep('error');
           setStatusText(status.separation.error || status.transcription.error || 'Xử lý bài hát thất bại.');
