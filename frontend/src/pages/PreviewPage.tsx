@@ -7,9 +7,9 @@ import type { KaraokePreset, LyricsData, TrackKind, VideoStyle } from '../types'
 
 const DEFAULT_STYLE: VideoStyle = {
   font_family: 'Be Vietnam Pro',
-  primary_color: '#F7F3EB',
-  secondary_color: '#FFB547',
-  outline_color: '#181109',
+  primary_color: 'rgba(255, 255, 255, 0.45)',
+  secondary_color: '#FFFFFF',
+  outline_color: 'transparent',
   effect: 'smooth',
 };
 
@@ -121,7 +121,7 @@ export const PreviewPage: React.FC = () => {
     setIsPlaying(true);
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(syncPlaybackLoop);
-    scheduleHideControls();
+    scheduleHideControls(true);
   };
 
   const handlePause = () => {
@@ -166,12 +166,13 @@ export const PreviewPage: React.FC = () => {
   };
 
   // Auto-hide controls during playback
-  const scheduleHideControls = useCallback(() => {
+  const scheduleHideControls = useCallback((forcePlaying?: boolean) => {
     if (hideControlsTimerRef.current) {
       window.clearTimeout(hideControlsTimerRef.current);
     }
     setShowControls(true);
-    if (isPlaying) {
+    const shouldHide = forcePlaying !== undefined ? forcePlaying : isPlaying;
+    if (shouldHide) {
       hideControlsTimerRef.current = window.setTimeout(() => {
         setShowControls(false);
       }, 3500);

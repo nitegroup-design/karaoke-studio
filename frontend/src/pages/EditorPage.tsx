@@ -25,9 +25,9 @@ const wait = (duration: number) => new Promise((resolve) => window.setTimeout(re
 
 const DEFAULT_STYLE: VideoStyle = {
   font_family: 'Be Vietnam Pro',
-  primary_color: '#F7F3EB',
-  secondary_color: '#FFB547',
-  outline_color: '#181109',
+  primary_color: 'rgba(255, 255, 255, 0.45)',
+  secondary_color: '#FFFFFF',
+  outline_color: 'transparent',
   effect: 'smooth',
 };
 

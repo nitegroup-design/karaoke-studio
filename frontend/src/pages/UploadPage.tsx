@@ -8,7 +8,12 @@ import type { ModelPreset, Song } from '../types';
 
 type ProcessStep = 'upload' | 'separating' | 'transcribing' | 'done' | 'error';
 
-const stateOf = (song: Song, key: 'separation' | 'transcription') => song.status[key]?.state?.toLowerCase() || 'pending';
+const stateOf = (song: Song, key: 'separation' | 'transcription') => {
+  const val = song.status[key] as any;
+  if (typeof val === 'string') return val.toLowerCase();
+  if (val && typeof val === 'object' && 'state' in val) return (val.state as string).toLowerCase();
+  return 'pending';
+};
 
 const processingStep = (song: Song): ProcessStep => {
   const separation = stateOf(song, 'separation');

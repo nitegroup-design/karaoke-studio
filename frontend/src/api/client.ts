@@ -193,9 +193,10 @@ export const audioUrl = (songId: string, track: TrackKind) => {
 export const artifactUrl = (songId: string, artifact: 'mp4' | 'ass' | 'srt' | 'wav', exportId?: string) => {
   if (getBackendMode() === 'supabase' && isSupabaseConfigured()) {
     const { url } = getSupabaseCredentials();
-    if (artifact === 'mp4') {
-      return `${url}/storage/v1/object/public/video-exports/${encodeURIComponent(songId)}/karaoke.mp4`;
-    }
+    const ext = artifact === 'mp4' ? 'mp4' : artifact;
+    const prefix = artifact === 'mp4' ? 'karaoke' : 'lyrics';
+    if (artifact === 'wav') return `${url}/storage/v1/object/public/stems/${encodeURIComponent(songId)}/vocals.wav`;
+    return `${url}/storage/v1/object/public/video-exports/${encodeURIComponent(songId)}/${prefix}.${ext}`;
   }
   const query = new URLSearchParams({ artifact });
   if (exportId) query.set('export_id', exportId);

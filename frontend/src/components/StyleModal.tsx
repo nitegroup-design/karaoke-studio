@@ -23,6 +23,13 @@ const FONT_OPTIONS = [
 
 const COLOR_THEMES = [
   {
+    name: 'Apple Tinh Tế',
+    primary: 'rgba(255, 255, 255, 0.45)',
+    secondary: '#FFFFFF',
+    outline: 'transparent',
+    icon: '✨',
+  },
+  {
     name: 'Hoàng Kim',
     primary: '#F7F3EB',
     secondary: '#FFB547',

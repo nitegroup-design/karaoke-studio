@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useState, useLayoutEffect } from 'react';
 import { api } from '../api/client';
 import type { KaraokePreset, LyricLine, LyricsData, VideoStyle } from '../types';
 import { playbackStateAt } from '../utils/lyrics';
@@ -116,24 +116,15 @@ function LuxuryStageBackground({
 }
 
 function BeatCountdown({ secondsRemaining }: { secondsRemaining: number }) {
-  const dotsCount = Math.max(1, Math.min(4, Math.ceil(secondsRemaining)));
-
+  const dots = Math.max(0, Math.min(4, Math.floor(secondsRemaining)));
   return (
-    <div className="countdown-badge" role="status" aria-label={`Chuẩn bị vào bài sau ${secondsRemaining.toFixed(1)} giây`}>
-      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#f59e0b', letterSpacing: '0.05em' }}>
-        CHUẨN BỊ
-      </span>
-      <div className="countdown-dots">
-        {[4, 3, 2, 1].map((dotIndex) => (
-          <span
-            key={dotIndex}
-            className={`countdown-dot ${dotsCount >= dotIndex ? 'active' : ''}`}
-          />
+    <div className="countdown-badge">
+      <div className="countdown-dots" aria-hidden="true">
+        {[4, 3, 2, 1].map((dot) => (
+          <span key={dot} className={`countdown-dot ${dots >= dot ? 'active' : ''}`} />
         ))}
       </div>
-      <span style={{ fontSize: '0.68rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', fontVariantNumeric: 'tabular-nums' }}>
-        {secondsRemaining.toFixed(1)}s
-      </span>
+      <span className="sr-only">Chuẩn bị hát...</span>
     </div>
   );
 }
@@ -189,8 +180,10 @@ function LuxuryWord({
       <span
         style={{
           color: primaryColor,
-          WebkitTextStroke: `1.5px ${outlineColor}`,
-          textShadow: `0 3px 8px ${outlineColor}, 0 1px 2px rgba(0,0,0,0.9)`,
+          WebkitTextStroke: outlineColor && outlineColor !== 'transparent' ? `1.5px ${outlineColor}` : undefined,
+          textShadow: outlineColor && outlineColor !== 'transparent'
+            ? `0 3px 8px ${outlineColor}, 0 1px 2px rgba(0,0,0,0.9)`
+            : '0 4px 12px rgba(0,0,0,0.3)',
         }}
       >
         {word}
@@ -205,10 +198,10 @@ function LuxuryWord({
           inset: 0,
           color: secondaryColor,
           clipPath: `inset(0 ${Math.max(0, 100 - fill)}% 0 0)`,
-          WebkitTextStroke: `1.5px ${outlineColor}`,
-          textShadow: isGlow || isCurrent
-            ? `0 0 14px ${secondaryColor}, 0 0 28px ${secondaryColor}, 0 2px 5px ${outlineColor}`
-            : `0 2px 4px ${outlineColor}`,
+          WebkitTextStroke: outlineColor && outlineColor !== 'transparent' ? `1.5px ${outlineColor}` : undefined,
+          textShadow: outlineColor && outlineColor !== 'transparent'
+            ? (isGlow || isCurrent ? `0 0 12px ${secondaryColor}, 0 2px 4px ${outlineColor}` : `0 2px 4px ${outlineColor}`)
+            : (isGlow || isCurrent ? `0 0 16px ${secondaryColor}, 0 4px 12px rgba(0,0,0,0.4)` : '0 4px 12px rgba(0,0,0,0.3)'),
           willChange: 'clip-path',
         }}
       >
@@ -275,7 +268,11 @@ function HighlightedLine({
           );
         })
       ) : (
-        <span style={{ color: primaryColor, WebkitTextStroke: `1.5px ${outlineColor}` }}>
+        <span style={{ 
+          color: primaryColor, 
+          WebkitTextStroke: outlineColor && outlineColor !== 'transparent' ? `1.5px ${outlineColor}` : undefined,
+          textShadow: outlineColor && outlineColor !== 'transparent' ? undefined : '0 4px 12px rgba(0,0,0,0.3)'
+        }}>
           {line.text}
         </span>
       )}
@@ -293,7 +290,7 @@ export function KaraokePreview({
   backgroundRevision,
   onSeek,
 }: KaraokePreviewProps) {
-  const state = useMemo(() => playbackStateAt(lyrics, currentTime), [lyrics, currentTime]);
+  const state = playbackStateAt(lyrics, currentTime);
   const { currentLineIndex, currentWordIndex, wordProgress } = state;
 
   // Find upcoming line when in pause/intro
@@ -411,7 +408,18 @@ export function KaraokePreview({
       ? upcomingInfo.index
       : 0;
 
-  const SLOT_HEIGHT = 70;
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
+
+  useLayoutEffect(() => {
+    if (preset !== 'modern' || !trackRef.current) return;
+    const track = trackRef.current;
+    if (anchor >= 0 && anchor < track.children.length) {
+      const child = track.children[anchor] as HTMLElement;
+      // Calculate true center offset based on actual rendered layout
+      setScrollOffset(child.offsetTop + child.offsetHeight / 2);
+    }
+  }, [anchor, preset, lyrics.lines]);
 
   return (
     <div className="karaoke-stage apple-stage" aria-label="Xem trước Apple Music Sing">
@@ -436,9 +444,10 @@ export function KaraokePreview({
       {/* Continuous Kinetic Spring Scroll Viewport */}
       <div className="apple-lyrics-viewport">
         <div
+          ref={trackRef}
           className="apple-lyrics-track"
           style={{
-            transform: `translate3d(0, calc(50% - ${anchor * SLOT_HEIGHT + SLOT_HEIGHT / 2}px), 0)`,
+            transform: `translate3d(0, calc(50% - ${scrollOffset}px), 0)`,
             transition: 'transform 0.68s cubic-bezier(0.2, 0.9, 0.3, 1)',
           }}
         >
@@ -455,7 +464,7 @@ export function KaraokePreview({
               <div
                 key={line.id}
                 className={`apple-line-slot ${depthClass} ${isActive ? 'is-active' : ''}`}
-                style={{ height: `${SLOT_HEIGHT}px` }}
+                style={{ minHeight: '80px', padding: '16px 0' }}
                 onClick={() => {
                   if (line.start !== null && onSeek) onSeek(line.start);
                 }}
