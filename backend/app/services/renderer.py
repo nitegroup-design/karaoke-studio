@@ -119,8 +119,19 @@ def karaoke_payload(line: LyricLine, event_start: Optional[float] = None, event_
             # highlight the accompanying review flag and align it later.
             chunks.append(f"{{\\kf0}}{escape_ass_text(word.word)}")
         else:
+            effective_end = word.end
+            next_word = line.words[index + 1] if index + 1 < len(line.words) else None
+            if next_word and next_word.start is not None and next_word.start > word.end:
+                gap = next_word.start - word.end
+                if gap <= 1.0:
+                    effective_end = next_word.start - 0.03
+            elif not next_word and line.end is not None and line.end > word.end:
+                gap = line.end - word.end
+                if gap <= 2.2:
+                    effective_end = line.end - 0.04
+
             word_start = min(end_cs, max(start_cs, _cs(word.start)))
-            word_end = min(end_cs, max(word_start, _cs(word.end)))
+            word_end = min(end_cs, max(word_start, _cs(effective_end)))
             if word_start > cursor:
                 chunks.append(f"{{\\k{word_start - cursor}}}")
                 cursor = word_start

@@ -93,8 +93,19 @@ export function karaokePayload(line: LyricLine, eventStart?: number, eventEnd?: 
     if (word.start === null || word.end === null) {
       chunks.push(`{\\kf0}${escapeAssText(word.word)}`);
     } else {
+      // Smart melisma: bridge held note gaps up to 1.0s between words, or up to 2.2s at line end
+      let effectiveEnd = word.end;
+      const nextWord = line.words[i + 1];
+      if (nextWord && nextWord.start !== null && nextWord.start > word.end) {
+        const gap = nextWord.start - word.end;
+        if (gap <= 1.0) effectiveEnd = nextWord.start - 0.03;
+      } else if (!nextWord && line.end !== null && line.end > word.end) {
+        const gap = line.end - word.end;
+        if (gap <= 2.2) effectiveEnd = line.end - 0.04;
+      }
+
       const wordStart = Math.min(endCs, Math.max(startCs, toCentis(word.start)));
-      const wordEnd = Math.min(endCs, Math.max(wordStart, toCentis(word.end)));
+      const wordEnd = Math.min(endCs, Math.max(wordStart, toCentis(effectiveEnd)));
       if (wordStart > cursor) {
         chunks.push(`{\\k${wordStart - cursor}}`);
         cursor = wordStart;
