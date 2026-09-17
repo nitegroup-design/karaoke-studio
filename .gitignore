@@ -1,0 +1,11 @@
+.validation/
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/uploads/
+backend/outputs/
+backend/*.db
+backend/*.db-*
+backend/*.log
+frontend/node_modules/
+frontend/dist/

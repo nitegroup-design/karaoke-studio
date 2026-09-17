@@ -183,22 +183,327 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .segmented-control { padding: 3px; display: inline-flex; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); }
 .segmented-control button { min-height: 29px; padding: 0 .65rem; border: 0; border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer; font-size: .65rem; font-weight: 700; white-space: nowrap; }
 .segmented-control button.active { background: var(--accent); color: #fff; box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 22%, transparent); }.dark .segmented-control button.active { color: #21170d; }
-.karaoke-stage { position: relative; flex: 1; min-height: 220px; aspect-ratio: 16 / 9; display: grid; place-items: center; overflow: hidden; border-radius: 13px; color: #fff; background: radial-gradient(circle at 50% 56%, rgba(194, 65, 12, .2), transparent 42%), linear-gradient(145deg, #151219, #08090c); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
-.preview-stack { position: relative; min-height: 220px; flex: 1; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 13px; background: #0b0c10; }
-.preview-stack .karaoke-stage { width: 100%; height: 100%; min-height: 0; aspect-ratio: auto; border-radius: inherit; }
-.ass-preview { position: absolute; z-index: 4; inset: 0; display: grid; place-items: center; pointer-events: none; opacity: 0; transition: opacity .2s ease; }
-.ass-preview.ready { opacity: 1; background: #111216; }
-.ass-preview canvas { width: 100% !important; height: 100% !important; object-fit: contain; }
-.ass-status { position: absolute; right: 8px; bottom: 7px; padding: .28rem .45rem; border-radius: 6px; background: rgba(0,0,0,.64); color: rgba(255,255,255,.7); font-size: .52rem; }
-.ass-status.error { color: #ffb4ad; }
-.karaoke-stage::before { content: ''; position: absolute; width: 46%; aspect-ratio: 1; border-radius: 50%; background: rgba(245, 158, 11, .13); filter: blur(70px); }
-.stage-grain { position: absolute; inset: 0; opacity: .18; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E"); }
-.stage-badge { position: absolute; top: 5%; left: 4%; color: rgba(255,255,255,.38); font-size: clamp(.42rem, .7vw, .62rem); font-weight: 700; letter-spacing: .14em; }
-.safe-area { position: absolute; inset: 8%; border: 1px dashed rgba(255,255,255,.08); border-radius: 6px; pointer-events: none; }
-.classic-lines { position: relative; z-index: 1; width: 90%; display: grid; gap: clamp(.7rem, 2vw, 1.8rem); text-align: center; }
-.preview-line { margin: 0; line-height: 1.45; }.preview-line-active { font-size: clamp(1.25rem, 3vw, 2.85rem); font-weight: 800; text-shadow: 0 3px 16px rgba(0,0,0,.65); }.preview-line-next { color: rgba(255,255,255,.34); font-size: clamp(1rem, 2.4vw, 2.15rem); font-weight: 700; }.preview-waiting { color: rgba(255,255,255,.48); }
-.preview-word { position: relative; display: inline-block; margin: 0 .13em; color: rgba(255,255,255,.38); }.preview-word-fill { position: absolute; inset: 0; color: #ffb547; text-shadow: 0 0 18px rgba(255, 166, 43, .35); transition: clip-path .06s linear; }
-.modern-stage { place-items: stretch; }.modern-lines { position: relative; z-index: 1; width: 92%; margin: auto; display: flex; flex-direction: column; justify-content: center; gap: clamp(.35rem, 1.3vh, .85rem); }.modern-line { text-align: center; transition: opacity .25s ease, transform .25s ease; }.modern-line p { margin: 0; color: #fff; font-size: clamp(.78rem, 1.8vw, 1.55rem); font-weight: 650; line-height: 1.35; }.modern-line-active .preview-line { font-size: clamp(1.25rem, 2.8vw, 2.7rem); }
+/* ==========================================================================
+   Luxury Karaoke Stage & Real-time Subtitle Engine
+   ========================================================================== */
+.preview-stack {
+  position: relative;
+  min-height: 230px;
+  flex: 1;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #07080c;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+.karaoke-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 230px;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: inherit;
+  color: #fff;
+  user-select: none;
+  background: #07080c;
+}
+
+/* Luxury Stage Backdrop */
+.stage-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 35%, #151827 0%, #0d0e19 45%, #050609 100%);
+}
+
+.stage-custom-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.85);
+}
+
+.stage-glow-ambient {
+  position: absolute;
+  top: -25%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 85%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(194, 65, 12, 0.05) 50%, transparent 75%);
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+.stage-glow-spotlight {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 180deg at 50% -10%, transparent 40%, rgba(254, 240, 138, 0.04) 47%, rgba(245, 158, 11, 0.08) 50%, rgba(254, 240, 138, 0.04) 53%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Centered Golden Embossed Watermark Logo */
+.stage-logo-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+  opacity: 0.22;
+  transition: opacity 0.3s ease;
+}
+
+.stage-logo-svg {
+  width: clamp(75px, 12vw, 120px);
+  height: clamp(75px, 12vw, 120px);
+  filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.35));
+}
+
+.stage-logo-text {
+  font-size: clamp(0.58rem, 0.95vw, 0.76rem);
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  color: #f59e0b;
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  text-transform: uppercase;
+}
+
+/* Twinkling Starfield */
+.stage-stars-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stage-star {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.9), 0 0 14px 2px rgba(245, 158, 11, 0.55);
+  animation: starTwinkle ease-in-out infinite;
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.18;
+    transform: scale(0.65);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.35);
+  }
+}
+
+.stage-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.85), inset 0 0 30px rgba(0, 0, 0, 0.9);
+}
+
+.stage-badge {
+  position: absolute;
+  top: 5%;
+  left: 4%;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: clamp(0.45rem, 0.75vw, 0.64rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  z-index: 3;
+}
+
+.safe-area {
+  position: absolute;
+  inset: 6%;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Beat Countdown & Instrumental Badges */
+.countdown-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(15, 16, 22, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(245, 158, 11, 0.25);
+  backdrop-filter: blur(10px);
+}
+
+.countdown-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.countdown-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.countdown-dot.active {
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b, 0 0 16px #f59e0b;
+  transform: scale(1.4);
+}
+
+.instrumental-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: rgba(15, 16, 22, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.audio-bars-mini {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 12px;
+}
+
+.audio-bars-mini span {
+  width: 2.5px;
+  height: 100%;
+  border-radius: 2px;
+  background: #f59e0b;
+  animation: miniBar 0.85s ease-in-out infinite alternate;
+}
+
+.audio-bars-mini span:nth-child(1) { animation-delay: 0.15s; height: 35%; }
+.audio-bars-mini span:nth-child(2) { animation-delay: 0.35s; height: 75%; }
+.audio-bars-mini span:nth-child(3) { animation-delay: 0.05s; height: 100%; }
+.audio-bars-mini span:nth-child(4) { animation-delay: 0.45s; height: 55%; }
+.audio-bars-mini span:nth-child(5) { animation-delay: 0.22s; height: 85%; }
+
+@keyframes miniBar {
+  from { height: 20%; opacity: 0.5; }
+  to { height: 100%; opacity: 1; }
+}
+
+/* Classic Alternating Layout */
+.classic-lines-container {
+  position: relative;
+  z-index: 2;
+  width: 90%;
+  max-width: 920px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 1.8vh, 18px);
+  padding: 10px;
+}
+
+.classic-slot {
+  width: 100%;
+  min-height: clamp(32px, 5.5vh, 52px);
+  display: flex;
+  align-items: center;
+}
+
+.slot-top {
+  justify-content: flex-start;
+  text-align: left;
+  padding-left: clamp(8px, 4vw, 44px);
+}
+
+.slot-bottom {
+  justify-content: flex-end;
+  text-align: right;
+  padding-right: clamp(8px, 4vw, 44px);
+}
+
+/* Modern Multi-line Scrolling Layout */
+.modern-stage {
+  place-items: stretch;
+}
+
+.modern-lines-container {
+  position: relative;
+  z-index: 2;
+  width: 92%;
+  max-width: 920px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(4px, 1.2vh, 12px);
+}
+
+.modern-line-slot {
+  width: 100%;
+  text-align: center;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modern-line-slot.active-slot {
+  transform: scale(1.04);
+}
+
+/* Luxury Word & Line Typography */
+.luxury-line {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.7vw, 2.45rem);
+  font-weight: 800;
+  line-height: 1.42;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.luxury-line-active {
+  opacity: 1;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.75));
+}
+
+.luxury-line-inactive {
+  opacity: 0.42;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
+.luxury-word {
+  position: relative;
+  display: inline-block;
+  will-change: transform;
+}
+
+.luxury-word-fill {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: clip-path;
+}
 .export-strip { min-height: 62px; padding: .65rem .75rem; display: flex; align-items: center; gap: .8rem; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
 .export-copy { min-width: 150px; display: flex; flex-direction: column; gap: .1rem; }.export-copy strong { font-size: .7rem; }.export-copy small { color: var(--muted); font-size: .55rem; }
 .export-progress { min-width: 120px; flex: 1; }.export-progress > div { height: 5px; overflow: hidden; border-radius: 5px; background: var(--panel-strong); }.export-progress span { display: block; height: 100%; background: var(--accent); transition: width .25s ease; }.export-progress small { color: var(--muted); font-size: .58rem; }

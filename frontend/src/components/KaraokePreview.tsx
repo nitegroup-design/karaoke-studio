@@ -10,6 +10,209 @@ interface KaraokePreviewProps {
   preset: KaraokePreset;
   style?: VideoStyle;
   hasCustomBackground?: boolean;
+  backgroundRevision?: number;
+}
+
+// 20 fixed star coordinates for consistent twinkling without re-rendering jitter
+const STARS = [
+  { top: '12%', left: '8%', size: 3, delay: '0s', duration: '2.5s' },
+  { top: '18%', left: '24%', size: 2, delay: '0.7s', duration: '3.1s' },
+  { top: '8%', left: '42%', size: 4, delay: '1.2s', duration: '2.8s' },
+  { top: '22%', left: '62%', size: 2.5, delay: '0.3s', duration: '3.4s' },
+  { top: '14%', left: '78%', size: 3, delay: '1.5s', duration: '2.9s' },
+  { top: '10%', left: '92%', size: 2, delay: '0.9s', duration: '3.2s' },
+  { top: '35%', left: '15%', size: 2.5, delay: '1.8s', duration: '3.5s' },
+  { top: '48%', left: '5%', size: 3, delay: '0.4s', duration: '2.7s' },
+  { top: '65%', left: '12%', size: 2, delay: '1.1s', duration: '3.3s' },
+  { top: '78%', left: '22%', size: 3.5, delay: '0.6s', duration: '2.6s' },
+  { top: '82%', left: '48%', size: 2, delay: '1.4s', duration: '3.6s' },
+  { top: '72%', left: '68%', size: 2.5, delay: '0.2s', duration: '2.8s' },
+  { top: '85%', left: '84%', size: 3, delay: '1.7s', duration: '3.0s' },
+  { top: '60%', left: '94%', size: 2, delay: '0.8s', duration: '3.2s' },
+  { top: '38%', left: '86%', size: 3.5, delay: '1.3s', duration: '2.9s' },
+  { top: '28%', left: '35%', size: 2, delay: '2.0s', duration: '3.4s' },
+];
+
+function LuxuryStageBackground({
+  hasCustomBackground,
+  songId,
+  backgroundRevision = 0,
+}: {
+  hasCustomBackground?: boolean;
+  songId?: string;
+  backgroundRevision?: number;
+}) {
+  const bgUrl = hasCustomBackground && songId
+    ? `${api.getBackgroundUrl(songId)}?v=${backgroundRevision}`
+    : '';
+
+  return (
+    <div className="stage-backdrop" aria-hidden="true">
+      {/* Custom background image if present */}
+      {hasCustomBackground && bgUrl ? (
+        <div
+          className="stage-custom-image"
+          style={{
+            backgroundImage: `linear-gradient(rgba(10, 10, 15, 0.65), rgba(10, 10, 15, 0.7)), url(${bgUrl})`,
+          }}
+        />
+      ) : (
+        <>
+          {/* Deep cinematic studio lighting */}
+          <div className="stage-glow-ambient" />
+          <div className="stage-glow-spotlight" />
+
+          {/* Golden embossed logo watermark in center */}
+          <div className="stage-logo-watermark">
+            <svg viewBox="0 0 100 100" className="stage-logo-svg">
+              <defs>
+                <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#fef08a" />
+                  <stop offset="50%" stopColor="#f59e0b" />
+                  <stop offset="100%" stopColor="#b45309" />
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="44" stroke="url(#logoGold)" strokeWidth="1.5" fill="none" opacity="0.35" />
+              <circle cx="50" cy="50" r="38" stroke="rgba(245, 158, 11, 0.3)" strokeWidth="1" strokeDasharray="4 4" fill="none" />
+              {/* Stylized Microphone & Music Notes */}
+              <rect x="44" y="24" width="12" height="24" rx="6" fill="url(#logoGold)" opacity="0.75" />
+              <path d="M38 36 C38 48 62 48 62 36" stroke="url(#logoGold)" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.85" />
+              <line x1="50" y1="48" x2="50" y2="64" stroke="url(#logoGold)" strokeWidth="2.5" strokeLinecap="round" opacity="0.85" />
+              <line x1="38" y1="64" x2="62" y2="64" stroke="url(#logoGold)" strokeWidth="2.5" strokeLinecap="round" opacity="0.85" />
+              {/* Music Clef / Sparkle Accents */}
+              <circle cx="70" cy="28" r="3" fill="url(#logoGold)" opacity="0.6" />
+              <circle cx="30" cy="28" r="2" fill="url(#logoGold)" opacity="0.5" />
+            </svg>
+            <span className="stage-logo-text">KARAOKE STUDIO</span>
+          </div>
+
+          {/* Twinkling Starfield */}
+          <div className="stage-stars-container">
+            {STARS.map((star, idx) => (
+              <div
+                key={idx}
+                className="stage-star"
+                style={{
+                  top: star.top,
+                  left: star.left,
+                  width: `${star.size}px`,
+                  height: `${star.size}px`,
+                  animationDelay: star.delay,
+                  animationDuration: star.duration,
+                }}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Subtle stage floor vignette and scanlines */}
+      <div className="stage-vignette" />
+    </div>
+  );
+}
+
+function BeatCountdown({ secondsRemaining }: { secondsRemaining: number }) {
+  const dotsCount = Math.max(1, Math.min(4, Math.ceil(secondsRemaining)));
+
+  return (
+    <div className="countdown-badge" role="status" aria-label={`Chuẩn bị vào bài sau ${secondsRemaining.toFixed(1)} giây`}>
+      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#f59e0b', letterSpacing: '0.05em' }}>
+        CHUẨN BỊ
+      </span>
+      <div className="countdown-dots">
+        {[4, 3, 2, 1].map((dotIndex) => (
+          <span
+            key={dotIndex}
+            className={`countdown-dot ${dotsCount >= dotIndex ? 'active' : ''}`}
+          />
+        ))}
+      </div>
+      <span style={{ fontSize: '0.68rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', fontVariantNumeric: 'tabular-nums' }}>
+        {secondsRemaining.toFixed(1)}s
+      </span>
+    </div>
+  );
+}
+
+function InstrumentalNotice({ secondsRemaining }: { secondsRemaining: number }) {
+  return (
+    <div className="instrumental-badge">
+      <div className="audio-bars-mini" aria-hidden="true">
+        <span /><span /><span /><span /><span />
+      </div>
+      <span>♫ Đoạn dạo nhạc ({Math.ceil(secondsRemaining)}s)</span>
+    </div>
+  );
+}
+
+function LuxuryWord({
+  word,
+  fill,
+  isCurrent,
+  fontFamily,
+  primaryColor,
+  secondaryColor,
+  outlineColor,
+  effect,
+}: {
+  word: string;
+  fill: number;
+  isCurrent: boolean;
+  fontFamily?: string;
+  primaryColor: string;
+  secondaryColor: string;
+  outlineColor: string;
+  effect?: 'smooth' | 'glow' | 'pop';
+}) {
+  const isGlow = effect === 'glow';
+  const isPop = effect === 'pop';
+
+  return (
+    <span
+      className="luxury-word"
+      style={{
+        display: 'inline-block',
+        position: 'relative',
+        margin: '0 0.14em',
+        fontFamily,
+        fontWeight: 800,
+        letterSpacing: '0.015em',
+        transform: isPop && isCurrent ? 'scale(1.08)' : isCurrent ? 'scale(1.02)' : 'scale(1)',
+        transition: 'transform 0.12s cubic-bezier(0.2, 0, 0, 1)',
+      }}
+    >
+      {/* Background/Base Text with outline and shadow */}
+      <span
+        style={{
+          color: primaryColor,
+          WebkitTextStroke: `1.5px ${outlineColor}`,
+          textShadow: `0 3px 8px ${outlineColor}, 0 1px 2px rgba(0,0,0,0.9)`,
+        }}
+      >
+        {word}
+      </span>
+
+      {/* Foreground Highlighted Fill */}
+      <span
+        className="luxury-word-fill"
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          color: secondaryColor,
+          clipPath: `inset(0 ${Math.max(0, 100 - fill)}% 0 0)`,
+          WebkitTextStroke: `1.5px ${outlineColor}`,
+          textShadow: isGlow || isCurrent
+            ? `0 0 14px ${secondaryColor}, 0 0 28px ${secondaryColor}, 0 2px 5px ${outlineColor}`
+            : `0 2px 4px ${outlineColor}`,
+          willChange: 'clip-path',
+        }}
+      >
+        {word}
+      </span>
+    </span>
+  );
 }
 
 function HighlightedLine({
@@ -26,47 +229,53 @@ function HighlightedLine({
   style?: VideoStyle;
 }) {
   const fontFamily = style?.font_family;
-  const primaryColor = style?.primary_color || 'rgba(255,255,255,0.7)';
-  const secondaryColor = style?.secondary_color || '#ffb547';
+  const primaryColor = style?.primary_color || '#F7F3EB';
+  const secondaryColor = style?.secondary_color || '#00B7FF';
   const outlineColor = style?.outline_color || '#181109';
-  const isGlow = style?.effect === 'glow';
-  const isPop = style?.effect === 'pop';
+  const effect = style?.effect || 'smooth';
 
   return (
-    <p className={active ? 'preview-line preview-line-active' : 'preview-line preview-line-next'} style={{ fontFamily }}>
-      {line.words.length > 0 ? line.words.map((word, index) => {
-        const fill = index < wordIndex ? 100 : index === wordIndex ? progress * 100 : 0;
-        const isCurrentWord = index === wordIndex;
-        return (
-          <span
-            key={word.id}
-            className="preview-word"
-            style={{
-              color: primaryColor,
-              WebkitTextStroke: `1px ${outlineColor}`,
-              textShadow: `0 2px 4px ${outlineColor}`,
-              transform: isPop && isCurrentWord ? 'scale(1.08)' : undefined,
-              transition: 'transform 0.1s ease',
-            }}
-          >
-            <span>{word.word}</span>
-            <span
-              className="preview-word-fill"
-              aria-hidden="true"
-              style={{
-                clipPath: `inset(0 ${100 - fill}% 0 0)`,
-                color: secondaryColor,
-                WebkitTextStroke: `1px ${outlineColor}`,
-                textShadow: isGlow
-                  ? `0 0 16px ${secondaryColor}, 0 0 24px ${secondaryColor}`
-                  : `0 2px 4px ${outlineColor}`,
-              }}
-            >
-              {word.word}
-            </span>
-          </span>
-        );
-      }) : line.text}
+    <p
+      className={`luxury-line ${active ? 'luxury-line-active' : 'luxury-line-inactive'}`}
+      style={{
+        fontFamily,
+        margin: 0,
+        lineHeight: 1.45,
+        opacity: active ? 1 : 0.45,
+        transform: active ? 'scale(1)' : 'scale(0.95)',
+        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
+    >
+      {line.words.length > 0 ? (
+        line.words.map((word, index) => {
+          const fill = active
+            ? index < wordIndex
+              ? 100
+              : index === wordIndex
+                ? progress * 100
+                : 0
+            : 0;
+          const isCurrentWord = active && index === wordIndex;
+
+          return (
+            <LuxuryWord
+              key={word.id}
+              word={word.word}
+              fill={fill}
+              isCurrent={isCurrentWord}
+              fontFamily={fontFamily}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+              outlineColor={outlineColor}
+              effect={effect}
+            />
+          );
+        })
+      ) : (
+        <span style={{ color: primaryColor, WebkitTextStroke: `1.5px ${outlineColor}` }}>
+          {line.text}
+        </span>
+      )}
     </p>
   );
 }
@@ -78,71 +287,158 @@ export function KaraokePreview({
   preset,
   style,
   hasCustomBackground,
+  backgroundRevision,
 }: KaraokePreviewProps) {
   const state = useMemo(() => playbackStateAt(lyrics, currentTime), [lyrics, currentTime]);
   const { currentLineIndex, currentWordIndex, wordProgress } = state;
 
-  const bgStyle: React.CSSProperties = hasCustomBackground && songId
-    ? {
-        backgroundImage: `linear-gradient(rgba(10, 10, 14, 0.55), rgba(10, 10, 14, 0.55)), url(${api.getBackgroundUrl(songId)})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+  // Find upcoming line when in pause/intro
+  const upcomingInfo = useMemo(() => {
+    if (currentLineIndex >= 0) return null;
+    for (let i = 0; i < lyrics.lines.length; i++) {
+      const line = lyrics.lines[i];
+      if (line.start !== null && line.start > currentTime) {
+        return { line, index: i, secondsUntil: line.start - currentTime };
       }
-    : {};
+    }
+    return null;
+  }, [lyrics.lines, currentTime, currentLineIndex]);
 
+  // Classic Alternating 2-line rendering
   if (preset === 'classic') {
-    const current = currentLineIndex >= 0 ? lyrics.lines[currentLineIndex] : undefined;
-    const next = currentLineIndex >= 0 ? lyrics.lines[currentLineIndex + 1] : lyrics.lines[0];
+    let topIndex = 0;
+    let bottomIndex = 1;
+
+    if (currentLineIndex >= 0) {
+      if (currentLineIndex % 2 === 0) {
+        topIndex = currentLineIndex;
+        bottomIndex = currentLineIndex + 1;
+      } else {
+        bottomIndex = currentLineIndex;
+        topIndex = currentLineIndex + 1;
+      }
+    } else if (upcomingInfo) {
+      if (upcomingInfo.index % 2 === 0) {
+        topIndex = upcomingInfo.index;
+        bottomIndex = upcomingInfo.index + 1;
+      } else {
+        bottomIndex = upcomingInfo.index;
+        topIndex = upcomingInfo.index + 1;
+      }
+    }
+
+    const topLine = lyrics.lines[topIndex];
+    const bottomLine = lyrics.lines[bottomIndex];
+    const isTopActive = currentLineIndex === topIndex;
+    const isBottomActive = currentLineIndex === bottomIndex;
+
     return (
-      <div className="karaoke-stage" style={bgStyle} aria-label="Xem trước karaoke Classic">
-        <div className="stage-grain" />
-        <div className="stage-badge">CLASSIC · 2 DÒNG</div>
-        <div className="classic-lines">
-          {current ? (
-            <HighlightedLine line={current} wordIndex={currentWordIndex} progress={wordProgress} active style={style} />
-          ) : (
-            <p className="preview-line preview-line-active preview-waiting" style={{ fontFamily: style?.font_family }}>
-              Nhấn phát để kiểm tra nhịp
-            </p>
+      <div className="karaoke-stage" aria-label="Xem trước karaoke Classic">
+        <LuxuryStageBackground
+          hasCustomBackground={hasCustomBackground}
+          songId={songId}
+          backgroundRevision={backgroundRevision}
+        />
+
+        <div className="stage-badge">CLASSIC · PHÒNG THU 1080P</div>
+
+        <div className="classic-lines-container">
+          {/* Instrumental or Countdown Indicator */}
+          {upcomingInfo && upcomingInfo.secondsUntil > 0 && (
+            <div style={{ marginBottom: '8px' }}>
+              {upcomingInfo.secondsUntil <= 3.5 ? (
+                <BeatCountdown secondsRemaining={upcomingInfo.secondsUntil} />
+              ) : (
+                <InstrumentalNotice secondsRemaining={upcomingInfo.secondsUntil} />
+              )}
+            </div>
           )}
-          {next ? <HighlightedLine line={next} wordIndex={-1} progress={0} active={false} style={style} /> : <div className="preview-line-spacer" />}
+
+          {/* Line 1 (Top) */}
+          <div className="classic-slot slot-top">
+            {topLine ? (
+              <HighlightedLine
+                line={topLine}
+                wordIndex={isTopActive ? currentWordIndex : -1}
+                progress={isTopActive ? wordProgress : 0}
+                active={isTopActive}
+                style={style}
+              />
+            ) : (
+              <div style={{ minHeight: '2.5rem' }} />
+            )}
+          </div>
+
+          {/* Line 2 (Bottom) */}
+          <div className="classic-slot slot-bottom">
+            {bottomLine ? (
+              <HighlightedLine
+                line={bottomLine}
+                wordIndex={isBottomActive ? currentWordIndex : -1}
+                progress={isBottomActive ? wordProgress : 0}
+                active={isBottomActive}
+                style={style}
+              />
+            ) : (
+              <div style={{ minHeight: '2.5rem' }} />
+            )}
+          </div>
         </div>
+
         <div className="safe-area" aria-hidden="true" />
       </div>
     );
   }
 
-  const anchor = currentLineIndex >= 0 ? currentLineIndex : 0;
-  const visible = lyrics.lines.slice(Math.max(0, anchor - 2), Math.min(lyrics.lines.length, anchor + 3));
+  // Modern Multi-line Scrolling
+  const anchor = currentLineIndex >= 0
+    ? currentLineIndex
+    : upcomingInfo
+      ? upcomingInfo.index
+      : 0;
+
+  const visibleLines = lyrics.lines.slice(Math.max(0, anchor - 2), Math.min(lyrics.lines.length, anchor + 3));
   const offset = Math.max(0, anchor - 2);
+
   return (
-    <div className="karaoke-stage modern-stage" style={bgStyle} aria-label="Xem trước karaoke Modern">
-      <div className="stage-grain" />
-      <div className="stage-badge">MODERN · CUỘN</div>
-      <div className="modern-lines">
-        {visible.map((line, localIndex) => {
+    <div className="karaoke-stage modern-stage" aria-label="Xem trước karaoke Modern">
+      <LuxuryStageBackground
+        hasCustomBackground={hasCustomBackground}
+        songId={songId}
+        backgroundRevision={backgroundRevision}
+      />
+
+      <div className="stage-badge">MODERN · ĐIỆN ẢNH</div>
+
+      <div className="modern-lines-container">
+        {upcomingInfo && upcomingInfo.secondsUntil > 0 && (
+          <div style={{ marginBottom: '12px', textAlign: 'center' }}>
+            {upcomingInfo.secondsUntil <= 3.5 ? (
+              <BeatCountdown secondsRemaining={upcomingInfo.secondsUntil} />
+            ) : (
+              <InstrumentalNotice secondsRemaining={upcomingInfo.secondsUntil} />
+            )}
+          </div>
+        )}
+
+        {visibleLines.map((line, localIndex) => {
           const absoluteIndex = localIndex + offset;
-          const distance = Math.abs(absoluteIndex - anchor);
-          const active = absoluteIndex === currentLineIndex;
+          const isActive = absoluteIndex === currentLineIndex;
+
           return (
-            <div
-              key={line.id}
-              className={`modern-line ${active ? 'modern-line-active' : ''}`}
-              style={{
-                opacity: active ? 1 : Math.max(0.16, 0.54 - distance * 0.14),
-                transform: `scale(${active ? 1 : 0.92 - distance * 0.03})`,
-                fontFamily: style?.font_family,
-              }}
-            >
-              {active ? (
-                <HighlightedLine line={line} wordIndex={currentWordIndex} progress={wordProgress} active style={style} />
-              ) : (
-                <p style={{ color: style?.primary_color || 'inherit' }}>{line.text}</p>
-              )}
+            <div key={line.id} className={`modern-line-slot ${isActive ? 'active-slot' : ''}`}>
+              <HighlightedLine
+                line={line}
+                wordIndex={isActive ? currentWordIndex : -1}
+                progress={isActive ? wordProgress : 0}
+                active={isActive}
+                style={style}
+              />
             </div>
           );
         })}
       </div>
+
       <div className="safe-area" aria-hidden="true" />
     </div>
   );

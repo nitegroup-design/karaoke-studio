@@ -145,7 +145,7 @@ export function UploadPage() {
     <main className="home-page">
       <div className="ambient ambient-one" /><div className="ambient ambient-two" />
       <header className="home-header">
-        <a className="brand" href="/" aria-label="Karaoke Studio">
+        <a className="brand" href="#/" aria-label="Karaoke Studio">
           <span className="brand-mark">K</span>
           <span><strong>Karaoke Studio</strong><small>LYRIC TIMING WORKSPACE</small></span>
         </a>

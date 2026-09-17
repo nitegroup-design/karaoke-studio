@@ -69,7 +69,7 @@ export const supabaseApi = {
     const supabase = getSupabase();
     const songId = crypto.randomUUID();
     const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3';
-const filePath = `${songId}/original.${ext}`;
+    const filePath = `${songId}/original.${ext}`;
 
     // Upload audio to bucket 'audio-inputs'
     const { error: uploadError } = await supabase.storage
@@ -130,13 +130,32 @@ const filePath = `${songId}/original.${ext}`;
       .eq('id', songId)
       .single();
 
-    if (error || !song) {
+    if (error || !song || !song.status) {
       return {
         separation: { state: 'pending' },
         transcription: { state: 'pending' },
       };
     }
-    return song.status as ProcessingStatus;
+    const raw = (typeof song.status === 'object' && song.status ? song.status : {}) as Record<string, unknown>;
+    const getStage = (val: unknown) => {
+      if (typeof val === 'string') return { state: val };
+      if (val && typeof val === 'object') {
+        const obj = val as Record<string, unknown>;
+        return {
+          state: typeof obj.state === 'string' ? obj.state : typeof obj.status === 'string' ? obj.status : 'pending',
+          progress: typeof obj.progress === 'number' ? obj.progress : undefined,
+          error: typeof obj.error === 'string' ? obj.error : undefined,
+        };
+      }
+      return { state: 'pending' };
+    };
+
+    return {
+      separation: getStage(raw.separation),
+      transcription: getStage(raw.transcription),
+      alignment: raw.alignment ? getStage(raw.alignment) : undefined,
+      render: raw.render ? getStage(raw.render) : undefined,
+    };
   },
 
   async getJob(jobId: string) {

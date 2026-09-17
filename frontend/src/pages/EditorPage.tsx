@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api, normalizeLyrics } from '../api/client';
-import { AssPreviewCanvas } from '../components/AssPreviewCanvas';
 import { ExportPanel } from '../components/ExportPanel';
 import { InspectorPanel } from '../components/InspectorPanel';
 import { KaraokePreview } from '../components/KaraokePreview';
@@ -76,7 +75,6 @@ export function EditorPage() {
   const [videoStyle, setVideoStyle] = useState<VideoStyle>(readVideoStyle);
   const [hasCustomBackground, setHasCustomBackground] = useState(false);
   const [backgroundRevision, setBackgroundRevision] = useState(0);
-  const [assReady, setAssReady] = useState(false);
   const [showStyleModal, setShowStyleModal] = useState(false);
   const [modelPreset, setModelPreset] = useState<ModelPreset>('quality');
   const [aligning, setAligning] = useState(false);
@@ -451,8 +449,15 @@ export function EditorPage() {
             </div>
           </div>
           <div className="preview-stack">
-            {!assReady && <KaraokePreview lyrics={lyrics} currentTime={currentTime} preset={preset} songId={songId} style={videoStyle} hasCustomBackground={hasCustomBackground} />}
-            <AssPreviewCanvas songId={songId} lyrics={lyrics} currentTime={currentTime} preset={preset} style={videoStyle} hasCustomBackground={hasCustomBackground} backgroundRevision={backgroundRevision} onReadyChange={setAssReady} />
+            <KaraokePreview
+              lyrics={lyrics}
+              currentTime={currentTime}
+              preset={preset}
+              songId={songId}
+              style={videoStyle}
+              hasCustomBackground={hasCustomBackground}
+              backgroundRevision={backgroundRevision}
+            />
           </div>
           <ExportPanel songId={songId} preset={preset} job={exportJob} disabled={saveState === 'conflict' || aligning} onStart={() => void startExport()} />
         </section>

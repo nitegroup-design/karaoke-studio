@@ -1,4 +1,4 @@
-﻿import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Thử tải lại bảng này
             </button>
             <a
-              href="/"
+              href="#/"
               style={{
                 padding: '0.6rem 1.2rem',
                 borderRadius: '8px',
