@@ -299,7 +299,17 @@ export function KaraokePreview({
     for (let i = 0; i < lyrics.lines.length; i++) {
       const line = lyrics.lines[i];
       if (line.start !== null && line.start > currentTime) {
-        return { line, index: i, secondsUntil: line.start - currentTime };
+        const prevLine = i > 0 ? lyrics.lines[i - 1] : null;
+        const gapDuration = prevLine && prevLine.end !== null 
+          ? line.start - prevLine.end 
+          : line.start;
+
+        return { 
+          line, 
+          index: i, 
+          secondsUntil: line.start - currentTime,
+          gapDuration
+        };
       }
     }
     return null;
@@ -437,13 +447,9 @@ export function KaraokePreview({
 
       <div className="stage-badge"> APPLE MUSIC SING</div>
 
-      {upcomingInfo && upcomingInfo.secondsUntil > 0 && (
+      {upcomingInfo && upcomingInfo.gapDuration >= 5 && upcomingInfo.secondsUntil <= 5 && upcomingInfo.secondsUntil > 0 && (
         <div className="apple-countdown-float">
-          {upcomingInfo.secondsUntil <= 3.5 ? (
-            <BeatCountdown secondsRemaining={upcomingInfo.secondsUntil} />
-          ) : (
-            <InstrumentalNotice secondsRemaining={upcomingInfo.secondsUntil} />
-          )}
+          <BeatCountdown secondsRemaining={upcomingInfo.secondsUntil} />
         </div>
       )}
 
