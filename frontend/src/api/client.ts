@@ -18,7 +18,7 @@ import {
   isSupabaseConfigured,
   setSupabaseCredentials,
   supabaseApi,
-} from './supabaseClient';
+} from './supabaseClient.ts';
 
 export type BackendMode = 'local' | 'supabase';
 

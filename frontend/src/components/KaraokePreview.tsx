@@ -11,6 +11,7 @@ interface KaraokePreviewProps {
   style?: VideoStyle;
   hasCustomBackground?: boolean;
   backgroundRevision?: number;
+  onSeek?: (time: number) => void;
 }
 
 // 20 fixed star coordinates for consistent twinkling without re-rendering jitter
@@ -58,7 +59,9 @@ function LuxuryStageBackground({
         />
       ) : (
         <>
-          {/* Deep cinematic studio lighting */}
+          {/* Apple-style Living Ambient Aurora Orbs */}
+          <div className="apple-aurora-orb orb-1" />
+          <div className="apple-aurora-orb orb-2" />
           <div className="stage-glow-ambient" />
           <div className="stage-glow-spotlight" />
 
@@ -288,6 +291,7 @@ export function KaraokePreview({
   style,
   hasCustomBackground,
   backgroundRevision,
+  onSeek,
 }: KaraokePreviewProps) {
   const state = useMemo(() => playbackStateAt(lyrics, currentTime), [lyrics, currentTime]);
   const { currentLineIndex, currentWordIndex, wordProgress } = state;
@@ -304,7 +308,9 @@ export function KaraokePreview({
     return null;
   }, [lyrics.lines, currentTime, currentLineIndex]);
 
-  // Classic Alternating 2-line rendering
+  // =========================================================================
+  // Classic Alternating 2-line KTV Preset (Phòng thu TV truyền thống)
+  // =========================================================================
   if (preset === 'classic') {
     let topIndex = 0;
     let bottomIndex = 1;
@@ -333,14 +339,14 @@ export function KaraokePreview({
     const isBottomActive = currentLineIndex === bottomIndex;
 
     return (
-      <div className="karaoke-stage" aria-label="Xem trước karaoke Classic">
+      <div className="karaoke-stage" aria-label="Xem trước karaoke Classic KTV">
         <LuxuryStageBackground
           hasCustomBackground={hasCustomBackground}
           songId={songId}
           backgroundRevision={backgroundRevision}
         />
 
-        <div className="stage-badge">CLASSIC · PHÒNG THU 1080P</div>
+        <div className="stage-badge">CLASSIC KTV · 1080P</div>
 
         <div className="classic-lines-container">
           {/* Instrumental or Countdown Indicator */}
@@ -354,8 +360,11 @@ export function KaraokePreview({
             </div>
           )}
 
-          {/* Line 1 (Top) */}
-          <div className="classic-slot slot-top">
+          {/* Line 1 (Top Slot) */}
+          <div
+            className={`classic-slot slot-top ${isTopActive ? 'slot-active' : 'slot-waiting'}`}
+            onClick={() => topLine?.start !== null && onSeek && onSeek(topLine.start)}
+          >
             {topLine ? (
               <HighlightedLine
                 line={topLine}
@@ -369,8 +378,11 @@ export function KaraokePreview({
             )}
           </div>
 
-          {/* Line 2 (Bottom) */}
-          <div className="classic-slot slot-bottom">
+          {/* Line 2 (Bottom Slot) */}
+          <div
+            className={`classic-slot slot-bottom ${isBottomActive ? 'slot-active' : 'slot-waiting'}`}
+            onClick={() => bottomLine?.start !== null && onSeek && onSeek(bottomLine.start)}
+          >
             {bottomLine ? (
               <HighlightedLine
                 line={bottomLine}
@@ -390,53 +402,76 @@ export function KaraokePreview({
     );
   }
 
-  // Modern Multi-line Scrolling
+  // =========================================================================
+  // Apple Music Sing Kinetic Spring Flow (Chuẩn Apple Music siêu mượt)
+  // =========================================================================
   const anchor = currentLineIndex >= 0
     ? currentLineIndex
     : upcomingInfo
       ? upcomingInfo.index
       : 0;
 
-  const visibleLines = lyrics.lines.slice(Math.max(0, anchor - 2), Math.min(lyrics.lines.length, anchor + 3));
-  const offset = Math.max(0, anchor - 2);
+  const SLOT_HEIGHT = 70;
 
   return (
-    <div className="karaoke-stage modern-stage" aria-label="Xem trước karaoke Modern">
+    <div className="karaoke-stage apple-stage" aria-label="Xem trước Apple Music Sing">
       <LuxuryStageBackground
         hasCustomBackground={hasCustomBackground}
         songId={songId}
         backgroundRevision={backgroundRevision}
       />
 
-      <div className="stage-badge">MODERN · ĐIỆN ẢNH</div>
+      <div className="stage-badge"> APPLE MUSIC SING</div>
 
-      <div className="modern-lines-container">
-        {upcomingInfo && upcomingInfo.secondsUntil > 0 && (
-          <div style={{ marginBottom: '12px', textAlign: 'center' }}>
-            {upcomingInfo.secondsUntil <= 3.5 ? (
-              <BeatCountdown secondsRemaining={upcomingInfo.secondsUntil} />
-            ) : (
-              <InstrumentalNotice secondsRemaining={upcomingInfo.secondsUntil} />
-            )}
-          </div>
-        )}
+      {upcomingInfo && upcomingInfo.secondsUntil > 0 && (
+        <div className="apple-countdown-float">
+          {upcomingInfo.secondsUntil <= 3.5 ? (
+            <BeatCountdown secondsRemaining={upcomingInfo.secondsUntil} />
+          ) : (
+            <InstrumentalNotice secondsRemaining={upcomingInfo.secondsUntil} />
+          )}
+        </div>
+      )}
 
-        {visibleLines.map((line, localIndex) => {
-          const absoluteIndex = localIndex + offset;
-          const isActive = absoluteIndex === currentLineIndex;
+      {/* Continuous Kinetic Spring Scroll Viewport */}
+      <div className="apple-lyrics-viewport">
+        <div
+          className="apple-lyrics-track"
+          style={{
+            transform: `translate3d(0, calc(50% - ${anchor * SLOT_HEIGHT + SLOT_HEIGHT / 2}px), 0)`,
+            transition: 'transform 0.68s cubic-bezier(0.2, 0.9, 0.3, 1)',
+          }}
+        >
+          {lyrics.lines.map((line, idx) => {
+            const dist = Math.abs(idx - anchor);
+            const isActive = idx === currentLineIndex;
 
-          return (
-            <div key={line.id} className={`modern-line-slot ${isActive ? 'active-slot' : ''}`}>
-              <HighlightedLine
-                line={line}
-                wordIndex={isActive ? currentWordIndex : -1}
-                progress={isActive ? wordProgress : 0}
-                active={isActive}
-                style={style}
-              />
-            </div>
-          );
-        })}
+            let depthClass = 'apple-line-active';
+            if (dist === 1) depthClass = 'apple-line-adjacent';
+            else if (dist === 2) depthClass = 'apple-line-mid';
+            else if (dist >= 3) depthClass = 'apple-line-far';
+
+            return (
+              <div
+                key={line.id}
+                className={`apple-line-slot ${depthClass} ${isActive ? 'is-active' : ''}`}
+                style={{ height: `${SLOT_HEIGHT}px` }}
+                onClick={() => {
+                  if (line.start !== null && onSeek) onSeek(line.start);
+                }}
+                title={line.start !== null ? `Nhấn để phát từ câu này (${line.start}s)` : undefined}
+              >
+                <HighlightedLine
+                  line={line}
+                  wordIndex={isActive ? currentWordIndex : -1}
+                  progress={isActive ? wordProgress : 0}
+                  active={isActive}
+                  style={style}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="safe-area" aria-hidden="true" />

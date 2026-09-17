@@ -43,9 +43,9 @@ const readVideoStyle = (): VideoStyle => {
 const readVideoPreset = (): KaraokePreset => {
   try {
     const raw = JSON.parse(localStorage.getItem('karaoke-video-settings:v1') || '{}') as { preset?: KaraokePreset };
-    return raw.preset === 'modern' ? 'modern' : 'classic';
+    return raw.preset === 'classic' ? 'classic' : 'modern';
   } catch {
-    return 'classic';
+    return 'modern';
   }
 };
 
@@ -443,8 +443,8 @@ export function EditorPage() {
                 🎨 Tùy biến chữ & Nền
               </button>
               <div className="segmented-control">
-                <button type="button" className={preset === 'classic' ? 'active' : ''} onClick={() => setPreset('classic')}>Classic</button>
-                <button type="button" className={preset === 'modern' ? 'active' : ''} onClick={() => setPreset('modern')}>Modern</button>
+                <button type="button" className={preset === 'modern' ? 'active' : ''} onClick={() => setPreset('modern')}> Apple Music</button>
+                <button type="button" className={preset === 'classic' ? 'active' : ''} onClick={() => setPreset('classic')}>Classic KTV</button>
               </div>
             </div>
           </div>
@@ -457,6 +457,7 @@ export function EditorPage() {
               style={videoStyle}
               hasCustomBackground={hasCustomBackground}
               backgroundRevision={backgroundRevision}
+              onSeek={seekTimeline}
             />
           </div>
           <ExportPanel songId={songId} preset={preset} job={exportJob} disabled={saveState === 'conflict' || aligning} onStart={() => void startExport()} />

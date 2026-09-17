@@ -265,4 +265,20 @@ def hybrid_align_canonical_lyrics(
                 words=line_word_objs, review_reasons=[ReviewReason.UNALIGNED_TEXT],
             ))
 
+    # Auto-bridge singing gaps for held notes (Melisma / Ngân dài)
+    for line in output_lines:
+        if line.locked:
+            continue
+        valid_words = [w for w in line.words if w.start is not None and w.end is not None]
+        for i in range(len(valid_words) - 1):
+            cur_w = valid_words[i]
+            next_w = valid_words[i + 1]
+            if cur_w.end is not None and next_w.start is not None:
+                gap = next_w.start - cur_w.end
+                if 0.0 < gap <= 0.85:
+                    cur_w.end = round(next_w.start - 0.03, 3)
+        if valid_words and line.end is not None and valid_words[-1].end is not None:
+            if valid_words[-1].end < line.end and (line.end - valid_words[-1].end) <= 2.2:
+                valid_words[-1].end = round(line.end - 0.05, 3)
+
     return output_lines

@@ -100,19 +100,46 @@ export const playbackStateAt = (lyrics: LyricsData, currentTime: number): Karaok
   let currentLineIndex = -1;
   let currentWordIndex = -1;
   let wordProgress = 0;
+
   for (let lineIndex = 0; lineIndex < lyrics.lines.length; lineIndex += 1) {
     const line = lyrics.lines[lineIndex];
-    if (line.start === null || line.end === null || currentTime < line.start || currentTime >= line.end) continue;
+    if (line.start === null || line.end === null) continue;
+
+    // Provide a brief inter-line grace window if next line is close so transition is seamless
+    const nextLine = lyrics.lines[lineIndex + 1];
+    const lineGrace = (nextLine && nextLine.start !== null && nextLine.start > line.end && (nextLine.start - line.end <= 1.2))
+      ? nextLine.start - 0.08
+      : line.end;
+
+    if (currentTime < line.start || currentTime >= lineGrace) continue;
+
     currentLineIndex = lineIndex;
+
     for (let wordIndex = 0; wordIndex < line.words.length; wordIndex += 1) {
       const word = line.words[wordIndex];
       if (word.start === null || word.end === null) continue;
-      if (currentTime >= word.start && currentTime <= word.end) {
+
+      // Smart Melisma: Bridge gaps between words for sustained / held notes (ngân dài)
+      const nextWord = line.words[wordIndex + 1];
+      let effectiveWordEnd = word.end;
+      if (nextWord && nextWord.start !== null && nextWord.start > word.end) {
+        const gap = nextWord.start - word.end;
+        if (gap <= 1.0) {
+          effectiveWordEnd = nextWord.start - 0.03;
+        }
+      } else if (!nextWord && line.end !== null && line.end > word.end) {
+        const gap = line.end - word.end;
+        if (gap <= 2.2) {
+          effectiveWordEnd = line.end - 0.04;
+        }
+      }
+
+      if (currentTime >= word.start && currentTime <= effectiveWordEnd) {
         currentWordIndex = wordIndex;
-        wordProgress = word.end > word.start ? (currentTime - word.start) / (word.end - word.start) : 1;
+        wordProgress = effectiveWordEnd > word.start ? (currentTime - word.start) / (effectiveWordEnd - word.start) : 1;
         break;
       }
-      if (currentTime > word.end) {
+      if (currentTime > effectiveWordEnd) {
         currentWordIndex = wordIndex;
         wordProgress = 1;
       }

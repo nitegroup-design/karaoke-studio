@@ -101,7 +101,56 @@ export function InspectorPanel({
             <button type="button" disabled={line.locked} onClick={() => onSetBoundary('start')}>Đặt đầu tại con trỏ</button>
             <button type="button" disabled={line.locked} onClick={() => onSetBoundary('end')}>Đặt cuối tại con trỏ</button>
           </div>
-          <div className="nudge-grid" aria-label="Dịch mốc thời gian">
+          <div className="button-row compact">
+            <button type="button" disabled={line.locked || targetStart === null} onClick={() => onNudge(-0.1)} title="Dịch mốc sớm hơn 100ms">
+              ◀ Sớm 0.1s
+            </button>
+            <button type="button" disabled={line.locked || targetEnd === null} onClick={() => onNudge(0.1)} title="Dịch mốc trễ hơn 100ms">
+              Trễ 0.1s ▶
+            </button>
+          </div>
+          {word && (() => {
+            const currentIdx = line.words.findIndex((w) => w.id === word.id);
+            const nextWord = currentIdx >= 0 && currentIdx < line.words.length - 1 ? line.words[currentIdx + 1] : null;
+            const canExtend = (nextWord && nextWord.start !== null && nextWord.start > (word.end ?? 0)) ||
+              (!nextWord && line.end !== null && line.end > (word.end ?? 0));
+            if (!canExtend) return null;
+            return (
+              <button
+                type="button"
+                style={{
+                  width: '100%',
+                  marginTop: '0.45rem',
+                  padding: '0.45rem 0.6rem',
+                  borderRadius: '9px',
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(194, 65, 12, 0.12))',
+                  border: '1px solid var(--accent)',
+                  color: 'var(--accent)',
+                  fontSize: '0.66rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+                onClick={() => {
+                  const targetNewEnd = nextWord && nextWord.start !== null
+                    ? Math.round((nextWord.start - 0.03) * 1000) / 1000
+                    : line.end !== null
+                      ? Math.round((line.end - 0.04) * 1000) / 1000
+                      : word.end;
+                  if (targetNewEnd && word.start !== null && targetNewEnd > word.start) {
+                    onWordChange(line.id, word.id, { end: targetNewEnd });
+                  }
+                }}
+                title="Tự động kéo dài thời lượng tiếng này đến sát tiếng kế tiếp để bắt trọn câu ngân dài"
+              >
+                ✨ 1-Click Nối nhịp ngân ({nextWord ? `đến “${nextWord.word}”` : 'hết câu'})
+              </button>
+            );
+          })()}
+          <div className="nudge-grid" aria-label="Dịch mốc thời gian tinh chỉnh">
             {[-0.05, -0.01, 0.01, 0.05].map((amount) => (
               <button type="button" key={amount} disabled={line.locked || targetStart === null || targetEnd === null} onClick={() => onNudge(amount)}>
                 {amount > 0 ? '+' : '−'}{Math.abs(amount) * 1000} ms

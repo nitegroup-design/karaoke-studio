@@ -10,7 +10,7 @@ import type {
   VideoStyle,
   WaveformData,
 } from '../types';
-import { generateAssText } from '../utils/assGenerator';
+import { generateAssText } from '../utils/assGenerator.ts';
 
 export function getSupabaseCredentials() {
   const envUrl = import.meta.env?.VITE_SUPABASE_URL || '';
