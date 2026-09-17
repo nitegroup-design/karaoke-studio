@@ -129,17 +129,6 @@ function BeatCountdown({ secondsRemaining }: { secondsRemaining: number }) {
   );
 }
 
-function InstrumentalNotice({ secondsRemaining }: { secondsRemaining: number }) {
-  return (
-    <div className="instrumental-badge">
-      <div className="audio-bars-mini" aria-hidden="true">
-        <span /><span /><span /><span /><span />
-      </div>
-      <span>♫ Đoạn dạo nhạc ({Math.ceil(secondsRemaining)}s)</span>
-    </div>
-  );
-}
-
 function LuxuryWord({
   word,
   fill,
@@ -217,12 +206,14 @@ function HighlightedLine({
   progress,
   active,
   style,
+  align = 'center',
 }: {
   line: LyricLine;
   wordIndex: number;
   progress: number;
   active: boolean;
   style?: VideoStyle;
+  align?: 'left' | 'center' | 'right';
 }) {
   const fontFamily = style?.font_family;
   const primaryColor = style?.primary_color || '#F7F3EB';
@@ -252,6 +243,9 @@ function HighlightedLine({
     return () => observer.disconnect();
   }, [line.text]);
 
+  // Adjust transformOrigin based on alignment so it scales gracefully
+  const origin = align === 'left' ? 'left center' : align === 'right' ? 'right center' : 'center';
+
   return (
     <div
       ref={containerRef}
@@ -260,7 +254,7 @@ function HighlightedLine({
         fontFamily,
         margin: 0,
         width: '100%',
-        textAlign: 'center',
+        textAlign: align,
         opacity: active ? 1 : 0.45,
         transition: 'opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
@@ -271,7 +265,7 @@ function HighlightedLine({
           display: 'inline-block',
           whiteSpace: 'nowrap',
           transform: `scale(${scale * (active ? 1 : 0.95)})`,
-          transformOrigin: 'center',
+          transformOrigin: origin,
           transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
@@ -412,13 +406,9 @@ export function KaraokePreview({
 
         <div className="classic-lines-container">
           {/* Instrumental or Countdown Indicator */}
-          {upcomingInfo && upcomingInfo.secondsUntil > 0 && (
+          {upcomingInfo && upcomingInfo.gapDuration >= 5 && upcomingInfo.secondsUntil <= 5 && upcomingInfo.secondsUntil > 0 && (
             <div style={{ marginBottom: '8px' }}>
-              {upcomingInfo.secondsUntil <= 3.5 ? (
-                <BeatCountdown secondsRemaining={upcomingInfo.secondsUntil} />
-              ) : (
-                <InstrumentalNotice secondsRemaining={upcomingInfo.secondsUntil} />
-              )}
+              <BeatCountdown secondsRemaining={upcomingInfo.secondsUntil} />
             </div>
           )}
 
@@ -434,6 +424,7 @@ export function KaraokePreview({
                 progress={isTopActive ? wordProgress : 0}
                 active={isTopActive}
                 style={style}
+                align="left"
               />
             ) : (
               <div style={{ minHeight: '2.5rem' }} />
@@ -452,6 +443,7 @@ export function KaraokePreview({
                 progress={isBottomActive ? wordProgress : 0}
                 active={isBottomActive}
                 style={style}
+                align="right"
               />
             ) : (
               <div style={{ minHeight: '2.5rem' }} />
