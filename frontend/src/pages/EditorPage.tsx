@@ -446,6 +446,30 @@ export function EditorPage() {
                 <button type="button" className={preset === 'modern' ? 'active' : ''} onClick={() => setPreset('modern')}> Apple Music</button>
                 <button type="button" className={preset === 'classic' ? 'active' : ''} onClick={() => setPreset('classic')}>Classic KTV</button>
               </div>
+              <button
+                type="button"
+                className="primary-button"
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.35rem 0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  background: 'linear-gradient(135deg, #f59e0b, #ea580c)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '999px',
+                  fontWeight: 650,
+                  boxShadow: '0 2px 10px rgba(245, 158, 11, 0.3)',
+                }}
+                onClick={async () => {
+                  await saveLatest();
+                  navigate(`/preview/${songId}`);
+                }}
+                title="Mở chế độ Sân khấu Karaoke toàn màn hình để hát"
+              >
+                🎤 Sân khấu (Stage)
+              </button>
             </div>
           </div>
           <div className="preview-stack">
