@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+torch
+torchaudio
+demucs
+faster-whisper
+stable-ts==2.19.1
+onnxruntime-directml
+aiofiles
+static-ffmpeg
+yt-dlp

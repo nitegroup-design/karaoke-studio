@@ -1,0 +1,32 @@
+{
+  "BeVietnamPro-Bold.ttf": {
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/bevietnampro/BeVietnamPro-Bold.ttf",
+    "git_blob": "52aadc6da089ed8ae647b5e0c8cac4f8b3e24750",
+    "weight": 700
+  },
+  "Montserrat-Bold.ttf": {
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf",
+    "git_blob": "c97aca18592834d8706549c279cb8d5ac5d85f69",
+    "weight": 700
+  },
+  "PlayfairDisplay-Bold.ttf": {
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/PlayfairDisplay%5Bwght%5D.ttf",
+    "git_blob": "7a09eb71f10622fd083134ac9ed46f59b21bee18",
+    "weight": 700
+  },
+  "Lexend-Bold.ttf": {
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/lexend/Lexend%5Bwght%5D.ttf",
+    "git_blob": "f70999106bfa76d48051b73ad7c888573663879c",
+    "weight": 700
+  },
+  "Oswald-Bold.ttf": {
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/Oswald%5Bwght%5D.ttf",
+    "git_blob": "d1a3b9cb1325bf20b3a06ef9849d21c411212a3b",
+    "weight": 700
+  },
+  "Roboto-Bold.ttf": {
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/roboto/Roboto%5Bwdth%2Cwght%5D.ttf",
+    "git_blob": "5522a368d9072fd88c299916e61fcff369949061",
+    "weight": 700
+  }
+}
