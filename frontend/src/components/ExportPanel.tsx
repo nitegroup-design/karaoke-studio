@@ -39,8 +39,6 @@ export function ExportPanel({ songId, preset, job, disabled, onStart }: ExportPa
               key={kind}
               href={artifactUrl(songId, kind, job.export_id)}
               download
-              target="_blank"
-              rel="noopener noreferrer"
               className="primary-button"
               style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
             >

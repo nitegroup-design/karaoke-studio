@@ -195,8 +195,8 @@ export const artifactUrl = (songId: string, artifact: 'mp4' | 'ass' | 'srt' | 'w
     const { url } = getSupabaseCredentials();
     const ext = artifact === 'mp4' ? 'mp4' : artifact;
     const prefix = artifact === 'mp4' ? 'karaoke' : 'lyrics';
-    if (artifact === 'wav') return `${url}/storage/v1/object/public/stems/${encodeURIComponent(songId)}/vocals.wav`;
-    return `${url}/storage/v1/object/public/video-exports/${encodeURIComponent(songId)}/${prefix}.${ext}`;
+    if (artifact === 'wav') return `${url}/storage/v1/object/public/stems/${encodeURIComponent(songId)}/vocals.wav?download=`;
+    return `${url}/storage/v1/object/public/video-exports/${encodeURIComponent(songId)}/${prefix}.${ext}?download=`;
   }
   const query = new URLSearchParams({ artifact });
   if (exportId) query.set('export_id', exportId);
