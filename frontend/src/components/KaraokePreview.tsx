@@ -38,12 +38,10 @@ function LuxuryStageBackground({
   hasCustomBackground,
   songId,
   backgroundRevision = 0,
-  preset,
 }: {
   hasCustomBackground?: boolean;
   songId?: string;
   backgroundRevision?: number;
-  preset: KaraokePreset;
 }) {
   const bgUrl = hasCustomBackground && songId
     ? `${api.getBackgroundUrl(songId)}?v=${backgroundRevision}`
@@ -61,37 +59,12 @@ function LuxuryStageBackground({
         />
       ) : (
         <>
-          {/* Apple-style Living Ambient Aurora Orbs */}
+          {/* Subtle pulsating app logo watermark */}
+          <div className="stage-logo-bg" />
+          
+          {/* Pulsating Ambient Gold Orbs */}
           <div className="apple-aurora-orb orb-1" />
           <div className="apple-aurora-orb orb-2" />
-          
-          {preset === 'classic' && (
-            <>
-              <div className="stage-glow-ambient" />
-              <div className="stage-glow-spotlight" />
-              {/* Golden embossed logo watermark in center */}
-              <div className="stage-logo-watermark">
-                <svg viewBox="0 0 100 100" className="stage-logo-svg">
-                  <defs>
-                    <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fef08a" />
-                      <stop offset="50%" stopColor="#f59e0b" />
-                      <stop offset="100%" stopColor="#b45309" />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="50" cy="50" r="44" stroke="url(#logoGold)" strokeWidth="1.5" fill="none" opacity="0.35" />
-                  <circle cx="50" cy="50" r="38" stroke="rgba(245, 158, 11, 0.3)" strokeWidth="1" strokeDasharray="4 4" fill="none" />
-                  <rect x="44" y="24" width="12" height="24" rx="6" fill="url(#logoGold)" opacity="0.75" />
-                  <path d="M38 36 C38 48 62 48 62 36" stroke="url(#logoGold)" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.85" />
-                  <line x1="50" y1="48" x2="50" y2="64" stroke="url(#logoGold)" strokeWidth="2.5" strokeLinecap="round" opacity="0.85" />
-                  <line x1="38" y1="64" x2="62" y2="64" stroke="url(#logoGold)" strokeWidth="2.5" strokeLinecap="round" opacity="0.85" />
-                  <circle cx="70" cy="28" r="3" fill="url(#logoGold)" opacity="0.6" />
-                  <circle cx="30" cy="28" r="2" fill="url(#logoGold)" opacity="0.5" />
-                </svg>
-                <span className="stage-logo-text">KARAOKE STUDIO</span>
-              </div>
-            </>
-          )}
 
           {/* Twinkling Starfield */}
           <div className="stage-stars-container">
@@ -404,7 +377,6 @@ export function KaraokePreview({
           hasCustomBackground={hasCustomBackground}
           songId={songId}
           backgroundRevision={backgroundRevision}
-          preset={preset}
         />
 
         <div className="stage-badge">CLASSIC KTV · 1080P</div>
@@ -474,7 +446,6 @@ export function KaraokePreview({
         hasCustomBackground={hasCustomBackground}
         songId={songId}
         backgroundRevision={backgroundRevision}
-        preset={preset}
       />
 
       <div className="stage-badge"> APPLE MUSIC SING</div>

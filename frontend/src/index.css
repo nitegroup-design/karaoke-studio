@@ -241,7 +241,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
-  background: #000000;
+  background: radial-gradient(ellipse at center, #1f1608 0%, #0a0702 100%);
 }
 
 .stage-custom-image {
@@ -333,7 +333,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   position: absolute;
   inset: 0;
   pointer-events: none;
-  box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.85), inset 0 0 30px rgba(0, 0, 0, 0.9);
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.4);
 }
 
 .stage-badge {
@@ -470,41 +470,61 @@ button:disabled { cursor: not-allowed; opacity: .45; }
    ========================================================================== */
 .apple-stage {
   place-items: stretch;
-  background: radial-gradient(circle at 50% 30%, #1c2135 0%, #0c0e14 100%);
 }
 
 /* Living Ambient Aurora Fluid Orbs */
+.stage-logo-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(200px, 40vw, 400px);
+  height: clamp(200px, 40vw, 400px);
+  background-image: url('/logo.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.04;
+  filter: blur(2px);
+  animation: audioPulseBg 2.5s ease-in-out infinite alternate;
+}
+
 .apple-aurora-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px);
+  filter: blur(100px);
   pointer-events: none;
-  opacity: 0.85;
+  opacity: 0.4;
   mix-blend-mode: screen;
-  animation: appleAurora 22s ease-in-out infinite alternate;
+  animation: audioPulseOrb 5s ease-in-out infinite alternate;
 }
 
 .apple-aurora-orb.orb-1 {
-  width: 140%;
-  height: 140%;
-  top: -40%;
-  left: -20%;
-  background: radial-gradient(circle, #ff2d55 0%, #5e5ce6 40%, transparent 70%);
+  width: 120%;
+  height: 120%;
+  top: -30%;
+  left: -10%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.4) 0%, rgba(217, 119, 6, 0.1) 50%, transparent 70%);
 }
 
 .apple-aurora-orb.orb-2 {
-  width: 130%;
-  height: 130%;
-  bottom: -30%;
-  right: -20%;
-  background: radial-gradient(circle, #0a84ff 0%, #ff2d55 50%, transparent 80%);
-  animation-delay: -11s;
+  width: 110%;
+  height: 110%;
+  bottom: -20%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(252, 211, 77, 0.3) 0%, rgba(180, 83, 9, 0.15) 50%, transparent 80%);
+  animation-delay: -2.5s;
 }
 
-@keyframes appleAurora {
-  0% { transform: scale(1) translate(0, 0) rotate(0deg); }
-  50% { transform: scale(1.15) translate(8%, -6%) rotate(10deg); }
-  100% { transform: scale(0.9) translate(-8%, 8%) rotate(-10deg); }
+@keyframes audioPulseBg {
+  0% { transform: translate(-50%, -50%) scale(0.98); opacity: 0.03; }
+  100% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.07; }
+}
+
+@keyframes audioPulseOrb {
+  0% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.05); opacity: 0.5; }
+  100% { transform: scale(0.95); opacity: 0.35; }
 }
 
 /* Apple Music Viewport with Fade-to-Edge Masks */
@@ -627,7 +647,13 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 
 /* Tactile singing pulse on active word */
 .luxury-word.is-singing-now {
-  transform: scale(1.02);
+  animation: musicalPulse 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+@keyframes musicalPulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08) translateY(-2px); text-shadow: 0 4px 12px rgba(255, 181, 71, 0.4); }
+  100% { transform: scale(1.03) translateY(0); text-shadow: none; }
 }
 
 /* Luxury Word & Line Typography */
