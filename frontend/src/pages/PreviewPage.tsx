@@ -10,7 +10,7 @@ const DEFAULT_STYLE: VideoStyle = {
   primary_color: 'rgba(255, 255, 255, 0.45)',
   secondary_color: '#FFFFFF',
   outline_color: 'transparent',
-  effect: 'smooth',
+  effect: 'glow',
 };
 
 const readVideoStyle = (): VideoStyle => {

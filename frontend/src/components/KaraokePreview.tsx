@@ -260,8 +260,7 @@ function HighlightedLine({
         fontFamily,
         margin: 0,
         width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
+        textAlign: 'center',
         opacity: active ? 1 : 0.45,
         transition: 'opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
@@ -269,6 +268,7 @@ function HighlightedLine({
       <div
         ref={textRef}
         style={{
+          display: 'inline-block',
           whiteSpace: 'nowrap',
           transform: `scale(${scale * (active ? 1 : 0.95)})`,
           transformOrigin: 'center',
