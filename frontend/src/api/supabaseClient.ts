@@ -68,7 +68,8 @@ export const supabaseApi = {
   async uploadSong(file: File): Promise<string> {
     const supabase = getSupabase();
     const songId = crypto.randomUUID();
-    const filePath = `${songId}/${file.name}`;
+    const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3';
+const filePath = `${songId}/original.${ext}`;
 
     // Upload audio to bucket 'audio-inputs'
     const { error: uploadError } = await supabase.storage
