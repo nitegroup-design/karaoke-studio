@@ -14,25 +14,6 @@ interface KaraokePreviewProps {
   onSeek?: (time: number) => void;
 }
 
-// 20 fixed star coordinates for consistent twinkling without re-rendering jitter
-const STARS = [
-  { top: '12%', left: '8%', size: 3, delay: '0s', duration: '2.5s' },
-  { top: '18%', left: '24%', size: 2, delay: '0.7s', duration: '3.1s' },
-  { top: '8%', left: '42%', size: 4, delay: '1.2s', duration: '2.8s' },
-  { top: '22%', left: '62%', size: 2.5, delay: '0.3s', duration: '3.4s' },
-  { top: '14%', left: '78%', size: 3, delay: '1.5s', duration: '2.9s' },
-  { top: '10%', left: '92%', size: 2, delay: '0.9s', duration: '3.2s' },
-  { top: '35%', left: '15%', size: 2.5, delay: '1.8s', duration: '3.5s' },
-  { top: '48%', left: '5%', size: 3, delay: '0.4s', duration: '2.7s' },
-  { top: '65%', left: '12%', size: 2, delay: '1.1s', duration: '3.3s' },
-  { top: '78%', left: '22%', size: 3.5, delay: '0.6s', duration: '2.6s' },
-  { top: '82%', left: '48%', size: 2, delay: '1.4s', duration: '3.6s' },
-  { top: '72%', left: '68%', size: 2.5, delay: '0.2s', duration: '2.8s' },
-  { top: '85%', left: '84%', size: 3, delay: '1.7s', duration: '3.0s' },
-  { top: '60%', left: '94%', size: 2, delay: '0.8s', duration: '3.2s' },
-  { top: '38%', left: '86%', size: 3.5, delay: '1.3s', duration: '2.9s' },
-  { top: '28%', left: '35%', size: 2, delay: '2.0s', duration: '3.4s' },
-];
 
 function LuxuryStageBackground({
   hasCustomBackground,
@@ -73,23 +54,6 @@ function LuxuryStageBackground({
             <div className="stage-logo-bg" />
           </div>
 
-          {/* Twinkling Starfield over the glass */}
-          <div className="stage-stars-container">
-            {STARS.map((star, idx) => (
-              <div
-                key={idx}
-                className="stage-star"
-                style={{
-                  top: star.top,
-                  left: star.left,
-                  width: `${star.size}px`,
-                  height: `${star.size}px`,
-                  animationDelay: star.delay,
-                  animationDuration: star.duration,
-                }}
-              />
-            ))}
-          </div>
         </>
       )}
 
