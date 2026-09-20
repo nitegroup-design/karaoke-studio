@@ -98,13 +98,12 @@ def run_whisper_alignment_gpu(vocals_audio: Path, reference_text: Optional[str],
     if reference_text and reference_text.strip():
         if report_callback:
             report_callback(70, "Đang so khớp bản lời chuẩn...")
-        # Forced alignment trực tiếp với bản lời chuẩn
-        result = model.align(str(vocals_audio), reference_text.strip(), language="vi", original_split=True)
+        # Forced alignment trực tiếp với bản lời chuẩn, Whisper sẽ tự động nhận diện ngôn ngữ
+        result = model.align(str(vocals_audio), reference_text.strip(), original_split=True)
     else:
         # Tự động nghe và bóc tách
         result = model.transcribe(
             str(vocals_audio),
-            language="vi",
             word_timestamps=True,
             vad_filter=True,
             vad_parameters={"min_silence_duration_ms": 400},
