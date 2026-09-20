@@ -207,7 +207,10 @@ function HighlightedLine({
         fontFamily,
         margin: 0,
         width: '100%',
-        textAlign: align,
+        maxWidth: '100%',
+        display: 'flex',
+        justifyContent: align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center',
+        alignItems: 'center',
         opacity: active ? 1 : 0.45,
         transition: 'opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
@@ -452,16 +455,23 @@ export function KaraokePreview({
             else if (dist === 2) depthClass = 'apple-line-mid';
             else if (dist >= 3) depthClass = 'apple-line-far';
 
-            // Performance Culling: Skip rendering deep DOM for items far out of view
-            // Using visibility: hidden + skipping HighlightedLine children keeps the node structure
-            // for offsetTop tracking but eliminates 90% of layout & GPU blur costs
+            // Performance Culling: Render with visibility: hidden to preserve exact layout height
+            // preventing the track from jumping around when items come into view.
             if (dist > 5) {
               return (
                 <div
                   key={line.id}
                   className={`apple-line-slot apple-line-far`}
                   style={{ minHeight: '80px', padding: '16px 0', visibility: 'hidden' }}
-                />
+                >
+                  <HighlightedLine
+                    line={line}
+                    wordIndex={-1}
+                    progress={0}
+                    active={false}
+                    style={style}
+                  />
+                </div>
               );
             }
 
