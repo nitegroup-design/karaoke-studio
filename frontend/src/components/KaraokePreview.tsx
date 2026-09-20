@@ -186,7 +186,12 @@ function HighlightedLine({
       }
     };
     const observer = new ResizeObserver(updateScale);
-    observer.observe(containerRef.current);
+    if (containerRef.current) observer.observe(containerRef.current);
+    if (textRef.current) observer.observe(textRef.current); // Catch font load size changes
+    
+    // Fallback: update on document fonts ready
+    document.fonts?.ready.then(updateScale);
+    
     updateScale();
     return () => observer.disconnect();
   }, [line.text]);
@@ -476,6 +481,7 @@ export function KaraokePreview({
                   progress={isActive ? wordProgress : 0}
                   active={isActive}
                   style={style}
+                  align="left"
                 />
               </div>
             );
