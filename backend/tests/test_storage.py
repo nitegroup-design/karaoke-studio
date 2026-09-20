@@ -76,6 +76,51 @@ class StorageTests(unittest.TestCase):
         self.assertEqual(lyrics_path.read_text(encoding="utf-8"), original)
         self.assertEqual(self.store.get_lyrics(song_id).canonical_text, "A\n\nB\nA")
 
+    def test_song_structure_persistence(self):
+        from app.models.schemas import SongStructure, LyricSection, SectionType, SectionOccurrence
+        occ = SectionOccurrence(section_id="sec-1", index=1, start=10.0, end=20.0)
+        section = LyricSection(id="sec-1", type=SectionType.VERSE, label="Verse 1", occurrences=[occ])
+        struct = SongStructure(sections=[section], bpm=128.0, key="G Minor")
+        self.store.save_song_structure("song-1", struct)
+
+        loaded = self.store.get_song_structure("song-1")
+        self.assertIsNotNone(loaded)
+        self.assertEqual(len(loaded.sections), 1)
+        self.assertEqual(loaded.sections[0].label, "Verse 1")
+        self.assertEqual(loaded.bpm, 128.0)
+        self.assertEqual(loaded.key, "G Minor")
+
+    def test_review_history_audit_trail(self):
+        entry = self.store.record_review_action(
+            "song-1",
+            action="CHANGE_WORD_END",
+            target_id="w-123",
+            old_value=12.4,
+            new_value=12.9,
+            user_id="user_admin",
+        )
+        self.assertEqual(entry.action, "CHANGE_WORD_END")
+        history = self.store.get_review_history("song-1")
+        self.assertEqual(len(history), 1)
+        self.assertEqual(history[0].target_id, "w-123")
+        self.assertEqual(history[0].old_value, 12.4)
+        self.assertEqual(history[0].new_value, 12.9)
+
+    def test_job_checkpoint_and_resume(self):
+        job = self.store.create_job("song-1", "process_all", {})
+        self.store.checkpoint_job(
+            job["id"],
+            stage="transcription",
+            checkpoint_data={"whisper_segments": 14, "last_timestamp": 45.2},
+            progress=55.0,
+            message="Transcribed 14 segments",
+        )
+        ckpt = self.store.get_job_checkpoint(job["id"])
+        self.assertEqual(ckpt["stage"], "transcription")
+        self.assertEqual(ckpt["progress"], 55.0)
+        self.assertEqual(ckpt["checkpoint"]["whisper_segments"], 14)
+
 
 if __name__ == "__main__":
     unittest.main()
+

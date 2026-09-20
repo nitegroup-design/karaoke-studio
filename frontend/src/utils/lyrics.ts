@@ -66,6 +66,10 @@ export const getReviewReasons = (line: LyricLine): string[] => {
     overlap: 'Có mốc chồng lên nhau',
     long_duration: 'Có tiếng kéo dài bất thường',
     unaligned_text: 'Nội dung đã đổi và cần căn lại',
+    low_confidence: 'Độ tin cậy AI thấp (< 70%), cần kiểm tra',
+    variation_detected: 'Phát hiện biến thể so với bản gốc',
+    extra_vocal: 'Phát hiện câu hát/ad-lib thêm trong audio',
+    omitted_vocal: 'Câu trong lời bài hát không xuất hiện trong audio',
   };
   const reasons = new Set(line.review_reasons.map((reason) => labels[reason]));
   if (line.start === null || line.end === null) reasons.add('Câu chưa có đủ mốc thời gian');

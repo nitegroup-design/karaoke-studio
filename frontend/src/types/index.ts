@@ -2,7 +2,61 @@ export type TrackKind = 'original' | 'vocals' | 'instrumental';
 export type KaraokePreset = 'classic' | 'modern';
 export type ModelPreset = 'quality' | 'draft';
 export type SaveState = 'saved' | 'unsaved' | 'saving' | 'conflict' | 'error';
-export type ReviewReason = 'missing_timing' | 'zero_duration' | 'overlap' | 'long_duration' | 'unaligned_text';
+export type ReviewReason =
+  | 'missing_timing'
+  | 'zero_duration'
+  | 'overlap'
+  | 'long_duration'
+  | 'unaligned_text'
+  | 'low_confidence'
+  | 'variation_detected'
+  | 'extra_vocal'
+  | 'omitted_vocal';
+
+export type SectionType =
+  | 'INTRO'
+  | 'HOOK'
+  | 'OPENING_HOOK'
+  | 'VERSE'
+  | 'PRE_CHORUS'
+  | 'CHORUS'
+  | 'POST_CHORUS'
+  | 'BRIDGE'
+  | 'BREAK'
+  | 'INSTRUMENTAL'
+  | 'OUTRO'
+  | 'SOLO'
+  | 'UNKNOWN';
+
+export type OccurrenceMatch = 'EXACT' | 'VARIATION' | 'PARTIAL' | 'OMITTED';
+
+export type VocalActivityType =
+  | 'SINGING'
+  | 'SPEECH'
+  | 'RAP'
+  | 'ADLIB'
+  | 'BACKGROUND_VOCAL'
+  | 'INSTRUMENTAL'
+  | 'SILENCE'
+  | 'UNKNOWN';
+
+export interface ConfidenceBreakdown {
+  text: number;
+  audio: number;
+  timing: number;
+  structure: number;
+  speaker?: number;
+  overall: number;
+}
+
+export interface LyricSyllable {
+  id: string;
+  text: string;
+  start: number | null;
+  end: number | null;
+  phonemes?: string[];
+  confidence?: number;
+}
 
 export interface VideoStyle {
   font_family: string;
@@ -17,6 +71,8 @@ export interface LyricWord {
   word: string;
   start: number | null;
   end: number | null;
+  confidence?: number;
+  syllables?: LyricSyllable[];
   review_required: boolean;
   review_reasons: ReviewReason[];
 }
@@ -27,9 +83,49 @@ export interface LyricLine {
   end: number | null;
   text: string;
   words: LyricWord[];
+  speaker?: string;
+  vocal_type?: VocalActivityType;
+  confidence?: ConfidenceBreakdown;
   locked: boolean;
   review_required: boolean;
   review_reasons: ReviewReason[];
+}
+
+export interface SectionOccurrence {
+  id: string;
+  section_id: string;
+  index: number;
+  start: number | null;
+  end: number | null;
+  match_type: OccurrenceMatch;
+  variation_notes?: string;
+  lines: LyricLine[];
+  confidence?: number;
+}
+
+export interface LyricSection {
+  id: string;
+  type: SectionType;
+  label: string;
+  canonical_lines: string[];
+  occurrences: SectionOccurrence[];
+}
+
+export interface SongStructure {
+  sections: LyricSection[];
+  bpm?: number;
+  key?: string;
+  duration?: number;
+}
+
+export interface ReviewHistoryEntry {
+  id: string;
+  timestamp: string;
+  user_id?: string;
+  action: string;
+  target_id: string;
+  old_value?: unknown;
+  new_value?: unknown;
 }
 
 export interface LyricsData {
@@ -39,6 +135,11 @@ export interface LyricsData {
   updated_at?: string;
   canonical_text?: string;
   lines: LyricLine[];
+  structure?: SongStructure;
+  speakers?: string[];
+  adlibs?: LyricLine[];
+  background_vocals?: LyricLine[];
+  review_history?: ReviewHistoryEntry[];
 }
 
 export interface StageStatus {

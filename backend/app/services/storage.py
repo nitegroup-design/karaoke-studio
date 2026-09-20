@@ -11,7 +11,7 @@ from typing import Any, Iterator, Optional
 from uuid import uuid4
 
 from app.config import DATABASE_PATH, OUTPUTS_DIR, UPLOADS_DIR
-from app.models.schemas import LyricsData, utc_now_iso
+from app.models.schemas import LyricsData, ReviewHistoryEntry, SongStructure, utc_now_iso
 
 
 class StorageError(RuntimeError):
@@ -109,8 +109,36 @@ class StudioStore:
                     FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
                 );
                 CREATE INDEX IF NOT EXISTS idx_exports_song ON exports(song_id, created_at DESC);
+                CREATE TABLE IF NOT EXISTS song_structures (
+                    song_id TEXT PRIMARY KEY,
+                    structure_json TEXT NOT NULL,
+                    bpm REAL,
+                    detected_key TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+                );
+                CREATE TABLE IF NOT EXISTS review_history (
+                    id TEXT PRIMARY KEY,
+                    song_id TEXT NOT NULL,
+                    action TEXT NOT NULL,
+                    target_id TEXT NOT NULL,
+                    old_value_json TEXT,
+                    new_value_json TEXT,
+                    user_id TEXT,
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+                );
+                CREATE INDEX IF NOT EXISTS idx_review_song ON review_history(song_id, created_at DESC);
                 """
             )
+            # Safe schema migrations for existing SQLite databases
+            job_cols = [row[1] for row in conn.execute("PRAGMA table_info(jobs)").fetchall()]
+            if "checkpoint_json" not in job_cols:
+                conn.execute("ALTER TABLE jobs ADD COLUMN checkpoint_json TEXT DEFAULT '{}'")
+            if "stage" not in job_cols:
+                conn.execute("ALTER TABLE jobs ADD COLUMN stage TEXT DEFAULT 'init'")
+
             # Work interrupted by a process restart must not remain "running" forever.
             now = utc_now_iso()
             conn.execute(
@@ -476,6 +504,120 @@ class StudioStore:
                         error="Existing lyrics.json could not be imported",
                     )
         return {"songs": imported_songs, "lyrics": imported_lyrics}
+
+    def save_song_structure(self, song_id: str, structure: SongStructure) -> None:
+        now = utc_now_iso()
+        with self._write_lock, self.connect() as conn:
+            conn.execute(
+                """INSERT INTO song_structures(song_id, structure_json, bpm, detected_key, created_at, updated_at)
+                   VALUES(?,?,?,?,?,?)
+                   ON CONFLICT(song_id) DO UPDATE SET
+                       structure_json=excluded.structure_json,
+                       bpm=excluded.bpm,
+                       detected_key=excluded.detected_key,
+                       updated_at=excluded.updated_at""",
+                (song_id, structure.model_dump_json(), structure.bpm, structure.key, now, now),
+            )
+
+    def get_song_structure(self, song_id: str) -> Optional[SongStructure]:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT structure_json FROM song_structures WHERE song_id=?", (song_id,)
+            ).fetchone()
+            if not row:
+                return None
+            try:
+                return SongStructure.model_validate_json(row["structure_json"])
+            except Exception:
+                return None
+
+    def record_review_action(
+        self,
+        song_id: str,
+        action: str,
+        target_id: str,
+        old_value: Any = None,
+        new_value: Any = None,
+        user_id: Optional[str] = None,
+    ) -> ReviewHistoryEntry:
+        entry = ReviewHistoryEntry(
+            id=str(uuid4()),
+            timestamp=utc_now_iso(),
+            user_id=user_id,
+            action=action,
+            target_id=target_id,
+            old_value=old_value,
+            new_value=new_value,
+        )
+        with self._write_lock, self.connect() as conn:
+            conn.execute(
+                """INSERT INTO review_history(id, song_id, action, target_id, old_value_json, new_value_json, user_id, created_at)
+                   VALUES(?,?,?,?,?,?,?,?)""",
+                (
+                    entry.id,
+                    song_id,
+                    entry.action,
+                    entry.target_id,
+                    _json(entry.old_value) if entry.old_value is not None else None,
+                    _json(entry.new_value) if entry.new_value is not None else None,
+                    entry.user_id,
+                    entry.timestamp,
+                ),
+            )
+        return entry
+
+    def get_review_history(self, song_id: str, limit: int = 100) -> list[ReviewHistoryEntry]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                """SELECT id, action, target_id, old_value_json, new_value_json, user_id, created_at
+                   FROM review_history WHERE song_id=? ORDER BY created_at DESC LIMIT ?""",
+                (song_id, limit),
+            ).fetchall()
+            results = []
+            for row in rows:
+                results.append(
+                    ReviewHistoryEntry(
+                        id=row["id"],
+                        timestamp=row["created_at"],
+                        user_id=row["user_id"],
+                        action=row["action"],
+                        target_id=row["target_id"],
+                        old_value=json.loads(row["old_value_json"]) if row["old_value_json"] else None,
+                        new_value=json.loads(row["new_value_json"]) if row["new_value_json"] else None,
+                    )
+                )
+            return results
+
+    def checkpoint_job(
+        self,
+        job_id: str,
+        stage: str,
+        checkpoint_data: dict[str, Any],
+        progress: Optional[float] = None,
+        message: Optional[str] = None,
+    ) -> None:
+        now = utc_now_iso()
+        with self._write_lock, self.connect() as conn:
+            updates = ["checkpoint_json=?", "stage=?", "updated_at=?"]
+            params: list[Any] = [_json(checkpoint_data), stage, now]
+            if progress is not None:
+                updates.append("progress=?")
+                params.append(progress)
+            if message is not None:
+                updates.append("message=?")
+                params.append(message)
+            params.append(job_id)
+            conn.execute(f"UPDATE jobs SET {', '.join(updates)} WHERE id=?", params)
+
+    def get_job_checkpoint(self, job_id: str) -> dict[str, Any]:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT stage, progress, checkpoint_json FROM jobs WHERE id=?", (job_id,)
+            ).fetchone()
+            if not row:
+                return {}
+            ckpt = json.loads(row["checkpoint_json"]) if row["checkpoint_json"] else {}
+            return {"stage": row["stage"], "progress": row["progress"], "checkpoint": ckpt}
 
 
 store = StudioStore()
