@@ -58,9 +58,9 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 Style: ClassicTop,{font},64,{primary},{secondary},{outline},&H80000000,-1,0,0,0,100,100,0,0,1,{outline_val},{shadow_val},2,100,100,190,1
 Style: ClassicBottom,{font},64,{primary},{secondary},{outline},&H80000000,-1,0,0,0,100,100,0,0,1,{outline_val},{shadow_val},2,100,100,100,1
 Style: ClassicNext,{font},58,&H00BFB8AC,&H00BFB8AC,{outline},&H80000000,-1,0,0,0,100,100,0,0,1,2,0,2,100,100,100,1
-Style: ModernFocus,{font},66,{primary},{secondary},{outline},&H60000000,-1,0,0,0,100,100,0,0,1,{outline_val},{shadow_val},4,160,160,0,1
-Style: ModernNear,{font},48,&H00CFC8BC,&H00CFC8BC,{outline},&H00000000,0,0,0,0,100,100,0,0,1,2,0,4,160,160,0,1
-Style: ModernFar,{font},40,&H00857F76,&H00857F76,{outline},&H00000000,0,0,0,0,100,100,0,0,1,2,0,4,160,160,0,1
+Style: ModernFocus,{font},66,{primary},{secondary},{outline},&H60000000,-1,0,0,0,100,100,0,0,1,{outline_val},{shadow_val},5,120,120,0,1
+Style: ModernNear,{font},48,&H00CFC8BC,&H00CFC8BC,{outline},&H00000000,0,0,0,0,100,100,0,0,1,2,0,5,140,140,0,1
+Style: ModernFar,{font},40,&H00857F76,&H00857F76,{outline},&H00000000,0,0,0,0,100,100,0,0,1,2,0,5,160,160,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -211,7 +211,7 @@ def generate_ass_text(lyrics: LyricsData, preset: str = "classic", style: Option
                         f"{fad_tag}{next_scale_tag}{{\\1c&H00BFB8AC&}}{escape_ass_text(next_line.text)}"
                     )
     else:
-        # Modern Apple Music or Neon flow (Left-aligned)
+        # Modern Apple Music or Neon flow (Centered)
         y_positions = [270, 405, 540, 675, 810]
         for focus, line in enumerate(lines):
             interval_start = float(line.start)
@@ -232,8 +232,8 @@ def generate_ass_text(lyrics: LyricsData, preset: str = "classic", style: Option
                     scale_tag = f"{{\\fscx{scale_ratio}\\fscy{scale_ratio}}}"
                 
                 y = y_positions[relative + 2]
-                # Alignment 4 (MidLeft) -> X is fixed at MarginL (160)
-                motion = f"{{\\move(160,{y + 18},160,{y},0,280)}}"
+                # Alignment 5 (MidCenter) -> X is fixed at Center (960)
+                motion = f"{{\\move(960,{y + 18},960,{y},0,280)}}"
                 text = (
                     karaoke_payload(visible, event_start=interval_start, event_end=interval_end)
                     if relative == 0

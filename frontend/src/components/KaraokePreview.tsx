@@ -481,7 +481,6 @@ export function KaraokePreview({
                   progress={isActive ? wordProgress : 0}
                   active={isActive}
                   style={style}
-                  align="left"
                 />
               </div>
             );
