@@ -58,9 +58,9 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 Style: ClassicTop,{font},64,{primary},{secondary},{outline},&H80000000,-1,0,0,0,100,100,0,0,1,{outline_val},{shadow_val},2,100,100,190,1
 Style: ClassicBottom,{font},64,{primary},{secondary},{outline},&H80000000,-1,0,0,0,100,100,0,0,1,{outline_val},{shadow_val},2,100,100,100,1
 Style: ClassicNext,{font},58,&H00BFB8AC,&H00BFB8AC,{outline},&H80000000,-1,0,0,0,100,100,0,0,1,2,0,2,100,100,100,1
-Style: ModernFocus,{font},66,{primary},{secondary},{outline},&H60000000,-1,0,0,0,100,100,0,0,1,{outline_val},{shadow_val},5,120,120,0,1
-Style: ModernNear,{font},48,&H00CFC8BC,&H00CFC8BC,{outline},&H00000000,0,0,0,0,100,100,0,0,1,2,0,5,140,140,0,1
-Style: ModernFar,{font},40,&H00857F76,&H00857F76,{outline},&H00000000,0,0,0,0,100,100,0,0,1,2,0,5,160,160,0,1
+Style: ModernFocus,{font},66,{primary},{secondary},{outline},&H60000000,-1,0,0,0,100,100,0,0,1,{outline_val},{shadow_val},4,160,160,0,1
+Style: ModernNear,{font},48,&H00CFC8BC,&H00CFC8BC,{outline},&H00000000,0,0,0,0,100,100,0,0,1,2,0,4,160,160,0,1
+Style: ModernFar,{font},40,&H00857F76,&H00857F76,{outline},&H00000000,0,0,0,0,100,100,0,0,1,2,0,4,160,160,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -186,20 +186,32 @@ def generate_ass_text(lyrics: LyricsData, preset: str = "classic", style: Option
             start = float(line.start)
             end = float(line.end)
             payload = karaoke_payload(line)
+            
+            char_count = len(line.text)
+            scale_tag = ""
+            if char_count > 35:
+                scale_ratio = max(60, int((35 / char_count) * 100))
+                scale_tag = f"{{\\fscx{scale_ratio}\\fscy{scale_ratio}}}"
+                
             events.append(
-                f"Dialogue: 1,{format_ass_time(start)},{format_ass_time(end)},{style_name},,0,0,0,,{fad_tag}{payload}"
+                f"Dialogue: 1,{format_ass_time(start)},{format_ass_time(end)},{style_name},,0,0,0,,{fad_tag}{scale_tag}{payload}"
             )
             if index + 1 < len(lines):
                 next_line = lines[index + 1]
                 preview_end = min(end, float(next_line.start))
                 if preview_end > start:
                     next_style = "ClassicBottom" if index % 2 == 0 else "ClassicTop"
+                    next_char_count = len(next_line.text)
+                    next_scale_tag = ""
+                    if next_char_count > 35:
+                        next_scale_ratio = max(60, int((35 / next_char_count) * 100))
+                        next_scale_tag = f"{{\\fscx{next_scale_ratio}\\fscy{next_scale_ratio}}}"
                     events.append(
                         f"Dialogue: 0,{format_ass_time(start)},{format_ass_time(preview_end)},{next_style},,0,0,0,,"
-                        f"{fad_tag}{{\\1c&H00BFB8AC&}}{escape_ass_text(next_line.text)}"
+                        f"{fad_tag}{next_scale_tag}{{\\1c&H00BFB8AC&}}{escape_ass_text(next_line.text)}"
                     )
     else:
-        # Modern Apple Music or Neon flow
+        # Modern Apple Music or Neon flow (Left-aligned)
         y_positions = [270, 405, 540, 675, 810]
         for focus, line in enumerate(lines):
             interval_start = float(line.start)
@@ -211,8 +223,17 @@ def generate_ass_text(lyrics: LyricsData, preset: str = "classic", style: Option
                 relative = line_index - focus
                 visible = lines[line_index]
                 style_name = "ModernFocus" if relative == 0 else ("ModernNear" if abs(relative) == 1 else "ModernFar")
+                
+                # Smart font scaling to prevent long lines from clipping
+                char_count = len(visible.text)
+                scale_tag = ""
+                if char_count > 35:
+                    scale_ratio = max(60, int((35 / char_count) * 100))
+                    scale_tag = f"{{\\fscx{scale_ratio}\\fscy{scale_ratio}}}"
+                
                 y = y_positions[relative + 2]
-                motion = f"{{\\move(960,{y + 18},960,{y},0,280)}}"
+                # Alignment 4 (MidLeft) -> X is fixed at MarginL (160)
+                motion = f"{{\\move(160,{y + 18},160,{y},0,280)}}"
                 text = (
                     karaoke_payload(visible, event_start=interval_start, event_end=interval_end)
                     if relative == 0
@@ -220,7 +241,7 @@ def generate_ass_text(lyrics: LyricsData, preset: str = "classic", style: Option
                 )
                 events.append(
                     f"Dialogue: {2 if relative == 0 else 0},{format_ass_time(interval_start)},"
-                    f"{format_ass_time(interval_end)},{style_name},,0,0,0,,{motion}{fad_tag}{text}"
+                    f"{format_ass_time(interval_end)},{style_name},,0,0,0,,{motion}{fad_tag}{scale_tag}{text}"
                 )
     return header + "\n".join(events) + ("\n" if events else "")
 
