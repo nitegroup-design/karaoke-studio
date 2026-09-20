@@ -190,7 +190,7 @@ export const audioUrl = (songId: string, track: TrackKind) => {
   return `${API_BASE_URL}/api/songs/${encodeURIComponent(songId)}/audio/${track}`;
 };
 
-export const artifactUrl = (songId: string, artifact: 'mp4' | 'ass' | 'srt' | 'wav', exportId?: string) => {
+export const artifactUrl = (songId: string, artifact: 'mp4' | 'ass' | 'srt' | 'lrc' | 'wav', exportId?: string) => {
   if (getBackendMode() === 'supabase' && isSupabaseConfigured()) {
     const { url } = getSupabaseCredentials();
     const ext = artifact === 'mp4' ? 'mp4' : artifact;

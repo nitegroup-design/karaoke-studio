@@ -51,8 +51,30 @@ def ffmpeg_binary() -> str:
     )
 
 
+@lru_cache(maxsize=1)
+def ffprobe_binary() -> Optional[str]:
+    configured = os.getenv("KARAOKE_FFPROBE_PATH")
+    if configured and Path(configured).is_file():
+        return str(Path(configured).resolve())
+
+    on_path = shutil.which("ffprobe")
+    if on_path:
+        return str(Path(on_path).resolve())
+
+    # Try next to ffmpeg
+    try:
+        ffmpeg_path = Path(ffmpeg_binary())
+        neighbor = ffmpeg_path.parent / ("ffprobe.exe" if os.name == "nt" else "ffprobe")
+        if neighbor.is_file():
+            return str(neighbor.resolve())
+    except Exception:
+        pass
+    return None
+
+
 # Automatically configure PATH on module import
 try:
     ffmpeg_binary()
 except Exception:
     pass
+

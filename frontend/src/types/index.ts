@@ -170,7 +170,7 @@ export interface ExportJob {
   progress: number;
   message?: string;
   error?: string;
-  artifacts: Partial<Record<'mp4' | 'ass' | 'srt' | 'wav', string>>;
+  artifacts: Partial<Record<'mp4' | 'ass' | 'srt' | 'lrc' | 'wav', string>>;
 }
 
 export interface WaveformData {

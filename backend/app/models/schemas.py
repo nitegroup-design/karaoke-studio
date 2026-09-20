@@ -100,7 +100,14 @@ class WordTimestamp(BaseModel):
 
     @model_validator(mode="after")
     def validate_timing(self) -> "WordTimestamp":
-        reasons = [reason for reason in self.review_reasons if reason == ReviewReason.UNALIGNED_TEXT]
+        preserved = {
+            ReviewReason.UNALIGNED_TEXT,
+            ReviewReason.VARIATION_DETECTED,
+            ReviewReason.EXTRA_VOCAL,
+            ReviewReason.OMITTED_VOCAL,
+            ReviewReason.LOW_CONFIDENCE,
+        }
+        reasons = [reason for reason in self.review_reasons if reason in preserved]
         if self.start is None or self.end is None:
             reasons.append(ReviewReason.MISSING_TIMING)
         elif self.end <= self.start:
@@ -131,7 +138,14 @@ class LyricLine(BaseModel):
 
     @model_validator(mode="after")
     def validate_line(self) -> "LyricLine":
-        reasons = [reason for reason in self.review_reasons if reason == ReviewReason.UNALIGNED_TEXT]
+        preserved = {
+            ReviewReason.UNALIGNED_TEXT,
+            ReviewReason.VARIATION_DETECTED,
+            ReviewReason.EXTRA_VOCAL,
+            ReviewReason.OMITTED_VOCAL,
+            ReviewReason.LOW_CONFIDENCE,
+        }
+        reasons = [reason for reason in self.review_reasons if reason in preserved]
         if self.start is None or self.end is None:
             reasons.append(ReviewReason.MISSING_TIMING)
         elif self.end <= self.start:

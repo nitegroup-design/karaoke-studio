@@ -102,7 +102,7 @@ def export_status(song_id: str, export_id: str | None = None):
 @router.get("/{song_id}/download")
 def download_export(
     song_id: str,
-    artifact: str = Query("mp4", pattern="^(mp4|ass|srt|wav|lyrics)$"),
+    artifact: str = Query("mp4", pattern="^(mp4|ass|srt|lrc|wav|lyrics)$"),
     export_id: str | None = None,
 ):
     try:
@@ -121,6 +121,7 @@ def download_export(
         "mp4": "video/mp4",
         "ass": "text/x-ass",
         "srt": "application/x-subrip",
+        "lrc": "text/plain",
         "wav": "audio/wav",
         "lyrics": "application/json",
     }

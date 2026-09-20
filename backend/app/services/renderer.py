@@ -150,14 +150,37 @@ def _timed_lines(lyrics: LyricsData) -> list[LyricLine]:
 
 
 def generate_ass_text(lyrics: LyricsData, preset: str = "classic", style: Optional[StyleOptions] = None) -> str:
-    if preset not in {"classic", "modern"}:
-        raise ValueError("preset must be 'classic' or 'modern'")
+    valid_presets = {"classic", "modern", "neon", "cinema"}
+    if preset not in valid_presets:
+        preset = "classic"
+
+    # Preset-specific style overrides if not provided
+    if style is None:
+        if preset == "neon":
+            style = StyleOptions(
+                font_family="Be Vietnam Pro",
+                primary_color="#F0F8FF",
+                secondary_color="#00FFFF",
+                outline_color="#FF007F",
+                effect="glow",
+            )
+        elif preset == "cinema":
+            style = StyleOptions(
+                font_family="Be Vietnam Pro",
+                primary_color="#FFF8E7",
+                secondary_color="#FFD700",
+                outline_color="#1A1815",
+                effect="smooth",
+            )
+
     lines = _timed_lines(lyrics)
     events: list[str] = []
     header = build_ass_header(style)
     fad_tag = r"{\fad(180,150)}"
 
-    if preset == "classic":
+    if preset in ("classic", "cinema"):
+        margin_v_top = 220 if preset == "cinema" else 190
+        margin_v_bot = 130 if preset == "cinema" else 100
         for index, line in enumerate(lines):
             style_name = "ClassicTop" if index % 2 == 0 else "ClassicBottom"
             start = float(line.start)
@@ -176,6 +199,7 @@ def generate_ass_text(lyrics: LyricsData, preset: str = "classic", style: Option
                         f"{fad_tag}{{\\1c&H00BFB8AC&}}{escape_ass_text(next_line.text)}"
                     )
     else:
+        # Modern Apple Music or Neon flow
         y_positions = [270, 405, 540, 675, 810]
         for focus, line in enumerate(lines):
             interval_start = float(line.start)
@@ -201,6 +225,29 @@ def generate_ass_text(lyrics: LyricsData, preset: str = "classic", style: Option
     return header + "\n".join(events) + ("\n" if events else "")
 
 
+def format_lrc_time(seconds: float) -> str:
+    clamped = max(0.0, seconds)
+    minutes = int(clamped // 60)
+    secs = clamped % 60
+    return f"{minutes:02d}:{secs:05.2f}"
+
+
+def generate_lrc_text(lyrics: LyricsData, enhanced: bool = False) -> str:
+    lines = _timed_lines(lyrics)
+    out = [f"[ti:{lyrics.title}]", "[by:Karaoke AI Studio]", ""]
+    for line in lines:
+        start_tag = f"[{format_lrc_time(float(line.start))}]"
+        if not enhanced or not line.words:
+            out.append(f"{start_tag}{line.text}")
+        else:
+            word_parts = []
+            for w in line.words:
+                w_start = float(w.start) if w.start is not None else float(line.start)
+                word_parts.append(f"<{format_lrc_time(w_start)}>{w.word}")
+            out.append(f"{start_tag}{' '.join(word_parts)}")
+    return "\n".join(out)
+
+
 def generate_srt_text(lyrics: LyricsData) -> str:
     blocks = []
     for index, line in enumerate(_timed_lines(lyrics), start=1):
@@ -216,9 +263,13 @@ def write_subtitles(
     srt_path: Path,
     preset: str,
     style: Optional[StyleOptions] = None,
+    lrc_path: Optional[Path] = None,
 ) -> None:
     ass_path.write_text(generate_ass_text(lyrics, preset, style), encoding="utf-8-sig")
     srt_path.write_text(generate_srt_text(lyrics), encoding="utf-8-sig")
+    if lrc_path:
+        lrc_path.write_text(generate_lrc_text(lyrics, enhanced=True), encoding="utf-8-sig")
+
 
 
 # Backwards-compatible public helper used by the earlier backend.
@@ -278,10 +329,11 @@ def render_video(
         export_dir.mkdir(parents=True, exist_ok=True)
         ass_path = export_dir / f"karaoke_{preset}.ass"
         srt_path = export_dir / f"karaoke_{preset}.srt"
+        lrc_path = export_dir / f"karaoke_{preset}.lrc"
         snapshot_path = export_dir / "lyrics.snapshot.json"
         video_path = export_dir / f"karaoke_{preset}.mp4"
         temporary_video = export_dir / f"karaoke_{preset}.partial.mp4"
-        write_subtitles(lyrics, ass_path, srt_path, preset, style)
+        write_subtitles(lyrics, ass_path, srt_path, preset, style, lrc_path=lrc_path)
         snapshot_path.write_text(lyrics.model_dump_json(indent=2), encoding="utf-8")
         if report:
             report(0.2, "Subtitles generated")
@@ -383,6 +435,7 @@ def render_video(
             "mp4": str(video_path),
             "ass": str(ass_path),
             "srt": str(srt_path),
+            "lrc": str(lrc_path),
             "wav": str(instrumental),
             "lyrics": str(snapshot_path),
         }
