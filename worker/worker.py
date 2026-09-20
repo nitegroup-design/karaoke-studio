@@ -136,6 +136,121 @@ def run_whisper_alignment_gpu(vocals_audio: Path, reference_text: Optional[str],
     return lines
 
 
+def process_export_job(supabase: Client, job: dict, report: Any):
+    job_id = job["id"]
+    song_id = job["song_id"]
+    payload = job.get("payload") or {}
+    preset = payload.get("preset", "modern")
+
+    report(10, f"Đang chuẩn bị dữ liệu xuất video (Preset: {preset})...")
+
+    # Add backend to sys.path
+    backend_dir = Path(__file__).resolve().parent.parent / "backend"
+    if str(backend_dir) not in sys.path:
+        sys.path.insert(0, str(backend_dir))
+
+    from app.models.schemas import LyricsData
+    from app.services.renderer import generate_ass_text, generate_srt_text, generate_lrc_text
+    from app.services.binaries import ffmpeg_binary
+    import subprocess
+
+    with tempfile.TemporaryDirectory() as temp_dir_str:
+        temp_dir = Path(temp_dir_str)
+
+        # 1. Lấy lyrics
+        lyrics_res = supabase.table("lyrics").select("*").eq("song_id", song_id).single().execute()
+        if not lyrics_res.data:
+            raise ValueError(f"Không tìm thấy lời bài hát cho song_id {song_id}")
+        lyrics_data = LyricsData.model_validate(lyrics_res.data)
+
+        # 2. Tải nhạc nền (WAV) từ bucket audio-stems (hoặc fallback audio-inputs)
+        report(20, "Đang tải nhạc nền instrumental...")
+        instrumental_path = temp_dir / "no_vocals.wav"
+        try:
+            download_file_from_storage(supabase, "audio-stems", f"{song_id}/no_vocals.wav", instrumental_path)
+        except Exception:
+            print("⚠️ Không tìm thấy no_vocals.wav, tải audio gốc...")
+            download_file_from_storage(supabase, "audio-inputs", f"{song_id}/original.mp3", temp_dir / "original.mp3")
+            instrumental_path = temp_dir / "original.mp3"
+
+        # 3. Tạo ASS, SRT, LRC
+        report(35, "Đang tạo phụ đề karaoke (ASS, SRT, LRC)...")
+        ass_text = generate_ass_text(lyrics_data, preset=preset)
+        srt_text = generate_srt_text(lyrics_data)
+        lrc_text = generate_lrc_text(lyrics_data, enhanced=True)
+
+        ass_path = temp_dir / f"karaoke_{preset}.ass"
+        srt_path = temp_dir / f"karaoke_{preset}.srt"
+        lrc_path = temp_dir / f"karaoke_{preset}.lrc"
+        ass_path.write_text(ass_text, encoding="utf-8-sig")
+        srt_path.write_text(srt_text, encoding="utf-8-sig")
+        lrc_path.write_text(lrc_text, encoding="utf-8-sig")
+
+        # 4. Kiểm tra ảnh nền nếu có
+        bg_path = temp_dir / "background.jpg"
+        has_bg = False
+        try:
+            download_file_from_storage(supabase, "audio-inputs", f"{song_id}/background.jpg", bg_path)
+            has_bg = True
+        except Exception:
+            pass
+
+        # 5. Dựng video MP4 bằng FFmpeg
+        report(50, "Đang render video MP4 1080p bằng FFmpeg...")
+        video_path = temp_dir / f"karaoke_{preset}.mp4"
+
+        fontsdir = backend_dir / "assets" / "fonts"
+        fontsdir_escaped = str(fontsdir).replace("\\", "/")
+        ffmpeg_cmd = ffmpeg_binary()
+
+        if has_bg:
+            vf = f"scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,drawbox=color=0x0A0A0E@0.55:t=fill,subtitles={ass_path.name}:fontsdir='{fontsdir_escaped}'"
+            args = [
+                ffmpeg_cmd, "-y",
+                "-loop", "1", "-framerate", "30",
+                "-i", bg_path.name,
+                "-i", instrumental_path.name,
+                "-vf", vf,
+                "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p",
+                "-c:a", "aac", "-b:a", "192k",
+                "-shortest",
+                video_path.name,
+            ]
+        else:
+            vf = f"subtitles={ass_path.name}:fontsdir='{fontsdir_escaped}'"
+            args = [
+                ffmpeg_cmd, "-y",
+                "-f", "lavfi", "-i", "color=c=0x111216:s=1920x1080:r=30",
+                "-i", instrumental_path.name,
+                "-vf", vf,
+                "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p",
+                "-c:a", "aac", "-b:a", "192k",
+                "-shortest",
+                video_path.name,
+            ]
+
+        res = subprocess.run(args, cwd=str(temp_dir), capture_output=True, text=True)
+        if res.returncode != 0:
+            print("FFmpeg stderr:", res.stderr)
+            raise RuntimeError(f"FFmpeg render thất bại: {res.stderr[-300:]}")
+
+        # 6. Tải các file thành phẩm lên Supabase
+        report(85, "Đang tải video MP4 và phụ đề lên Cloud...")
+        upload_file_to_storage(supabase, "video-exports", f"{song_id}/karaoke.mp4", video_path, "video/mp4")
+        upload_file_to_storage(supabase, "video-exports", f"{song_id}/lyrics.ass", ass_path, "text/x-ass")
+        upload_file_to_storage(supabase, "video-exports", f"{song_id}/lyrics.srt", srt_path, "text/plain")
+        upload_file_to_storage(supabase, "video-exports", f"{song_id}/lyrics.lrc", lrc_path, "text/plain")
+
+        report(100, "Hoàn tất xuất video thành công!")
+        supabase.table("jobs").update({
+            "status": "done",
+            "progress": 100,
+            "message": "Hoàn tất xuất video thành công!",
+            "result": {"video_url": f"{song_id}/karaoke.mp4"},
+        }).eq("id", job_id).execute()
+        print(f"✅ Hoàn thành xuất video MP4 cho bài hát [{song_id}]!")
+
+
 def process_job(supabase: Client, job: dict):
     job_id = job["id"]
     song_id = job["song_id"]
@@ -151,6 +266,9 @@ def process_job(supabase: Client, job: dict):
             "message": message,
             "worker_id": WORKER_ID,
         }).eq("id", job_id).execute()
+
+    if kind == "export":
+        return process_export_job(supabase, job, report)
 
     # Lấy thông tin bài hát
     song_res = supabase.table("songs").select("*").eq("id", song_id).single().execute()

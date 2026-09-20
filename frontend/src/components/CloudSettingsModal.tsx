@@ -175,16 +175,40 @@ export function CloudSettingsModal({ isOpen, onClose, onModeChanged }: Props) {
 
           <div
             style={{
-              fontSize: '0.78rem',
+              fontSize: '0.82rem',
               lineHeight: 1.5,
-              opacity: 0.75,
-              background: 'rgba(255, 255, 255, 0.04)',
-              padding: '0.75rem 1rem',
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.25)',
+              padding: '0.85rem 1rem',
               borderRadius: '8px',
               marginBottom: '1.25rem',
             }}
           >
-            💡 <strong>Mẹo kiến trúc:</strong> Khi dùng chế độ Đám mây, Frontend chạy hoàn toàn tĩnh (trên GitHub Pages), kết nối trực tiếp với Supabase Database & Storage. Worker GPU (chạy miễn phí trên Google Colab hoặc RunPod) sẽ tự động nhận lệnh tách nhạc và căn nhịp chỉ trong 15 giây!
+            <div style={{ fontWeight: 600, color: '#60a5fa', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              ⚡ GPU Worker (Google Colab miễn phí)
+            </div>
+            <div style={{ opacity: 0.85, marginBottom: '8px' }}>
+              Khi tách nhạc hoặc xuất video MP4, bạn cần mở Google Colab để nhận tác vụ từ hàng đợi Supabase:
+            </div>
+            <a
+              href="https://colab.research.google.com/github/nitegroup-design/karaoke-studio/blob/main/worker/karaoke_colab_worker.ipynb"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#3b82f6',
+                color: '#fff',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '6px',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+              }}
+            >
+              🚀 Mở Google Colab GPU Worker (1-Click) ↗
+            </a>
           </div>
 
           {savedMessage && (
