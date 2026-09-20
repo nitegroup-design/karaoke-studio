@@ -291,6 +291,11 @@ def process_job(supabase: Client, job: dict):
                 "format": "bestaudio/best",
                 "outtmpl": str(temp_dir / "yt.%(ext)s"),
                 "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"}],
+                "extractor_args": {
+                    "youtube": {
+                        "player_client": ["android", "ios"],
+                    },
+                },
                 "noplaylist": True,
                 "quiet": True,
             }

@@ -98,6 +98,11 @@ async def upload_youtube(req: YouTubeRequest):
             "preferredcodec": "mp3",
             "preferredquality": "192",
         }],
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios"],
+            },
+        },
         "noplaylist": True,
         "quiet": True,
         "no_warnings": True,
