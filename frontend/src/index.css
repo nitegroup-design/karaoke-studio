@@ -416,7 +416,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   position: relative;
   z-index: 2;
   width: 90%;
-  max-width: 920px;
+  max-width: 1400px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -427,6 +427,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 
 .classic-slot {
   width: 100%;
+  max-width: 100%;
   min-height: clamp(32px, 5.5vh, 52px);
   display: flex;
   align-items: center;
@@ -545,6 +546,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   top: 0;
   left: 0;
   width: 100%;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -554,6 +556,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 
 .apple-line-slot {
   width: 100%;
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -628,6 +631,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 /* Classic KTV Transitions */
 .classic-slot {
   width: 100%;
+  max-width: 100%;
   min-height: clamp(32px, 5.5vh, 52px);
   display: flex;
   align-items: center;
